@@ -7,15 +7,19 @@
 //
 
 #import "AppDelegate.h"
+#import "BCHMotionManager.h"
+#import "ViewController.h"
 
 @interface AppDelegate ()
-
+@property (strong, nonatomic) BCHMotionManager *manager;
 @end
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+
+    self.manager = [BCHMotionManager sharedInstance];
+
     return YES;
 }
 
