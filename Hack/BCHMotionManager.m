@@ -7,6 +7,21 @@
 //
 
 #import "BCHMotionManager.h"
+#import <AFNetworking/AFNetworking.h>
+
+static NSString *const BCH_API_URL = @"http://df49858.ngrok.com/update";
+
+typedef struct MotionData {
+    double roll;
+    double pitch;
+    double yaw;
+    double rotX;
+    double rotY;
+    double rotZ;
+    double accelX;
+    double accelY;
+    double accelZ;
+} MotionData;
 
 @interface BCHMotionManager ()
 @property (nonatomic) double currentMaxAccelX;
@@ -42,26 +57,26 @@
         self.currentMaxRotZ = 0;
         
         self.motionManager = [[CMMotionManager alloc] init];
-        self.motionManager.accelerometerUpdateInterval = .2;
-        self.motionManager.gyroUpdateInterval = .2;
-        
         NSOperationQueue *motionQueue = [[NSOperationQueue alloc] init];
         
-        // default: 0.2 (seconds)
-        self.motionManager.accelerometerUpdateInterval;
-        // default: 0.2 (seconds)
-        self.motionManager.gyroUpdateInterval;
-        // default: 0.01 (seconds)
-        self.motionManager.deviceMotionUpdateInterval;
-        // default: 0.025 (seconds)
-        self.motionManager.magnetometerUpdateInterval;
 
+        // default: 0.2 (seconds)
+//        self.motionManager.accelerometerUpdateInterval;
+        // default: 0.2 (seconds)
+//        self.motionManager.gyroUpdateInterval;
+        // default: 0.01 (seconds)
+        self.motionManager.deviceMotionUpdateInterval = 0.2;
+        // default: 0.025 (seconds)
+//        self.motionManager.magnetometerUpdateInterval;
+
+
+        /*
         [self.motionManager startAccelerometerUpdatesToQueue:motionQueue
                                                  withHandler:^(CMAccelerometerData  *accelerometerData, NSError *error) {
              if(error){
                  NSLog(@"accelerometer error: %@", error);
              }
-             [self handleAccelerationData:accelerometerData];
+             [self handleAccelerationData:accelerometerData.acceleration];
              [self outputAccelerationData:accelerometerData.acceleration];
         }];
 
@@ -70,9 +85,18 @@
             if(error){
                 NSLog(@"gyro error: %@", error);
             }
-            [self handleGyroData:gyroData];
+            [self handleGyroData:gyroData.rotationRate];
             [self outputRotationData:gyroData.rotationRate];
         }];
+        
+        [self.motionManager startMagnetometerUpdatesToQueue:motionQueue
+                                                withHandler:^(CMMagnetometerData *magnetometerData, NSError *error) {
+                                                    if(error){
+                                                        NSLog(@"gyro error: %@", error);
+                                                    }
+                                                    [self handleMagnetometerData:magnetometerData];
+                                                }];
+        */
 
         [self.motionManager startDeviceMotionUpdatesToQueue:motionQueue
                                                 withHandler:^(CMDeviceMotion *motion, NSError *error) {
@@ -80,32 +104,115 @@
                 NSLog(@"gyro error: %@", error);
             }
             [self handleDeviceMotionData:motion];
+            [self debugDeviceMotionData:motion];
         }];
         
-        [self.motionManager startMagnetometerUpdatesToQueue:motionQueue
-                                                withHandler:^(CMMagnetometerData *magnetometerData, NSError *error) {
-            if(error){
-                NSLog(@"gyro error: %@", error);
-            }
-            [self handleMagnetometerData:magnetometerData];
-        }];
+
     }
     return self;
 }
 
-- (void)handleAccelerationData:(CMAccelerometerData *)data
+- (void)handleDeviceMotionData:(CMDeviceMotion *)data
+{
+    MotionData params;
+    
+    CMAttitude *attitude = data.attitude;
+    CMRotationRate rotationRate = data.rotationRate;
+    CMAcceleration userAccelerationVector = data.userAcceleration;
+
+    CMAcceleration gravityAccelerationVector = data.gravity;
+    CMMagneticField calibratedMagneticField = data.magneticField.field;
+
+    double roll = attitude.roll;
+    double pitch = attitude.pitch;
+    double yaw = attitude.yaw;
+    params.roll = roll;
+    params.pitch = pitch;
+    params.yaw = yaw;
+    
+    /*
+     This property yields a measurement of the device’s rate of rotation around three axes.
+     
+     The X-axis rotation rate in radians per second. The sign follows the right hand rule: If the right hand is wrapped around the X axis such that the tip of the thumb points toward positive X, a positive rotation is one toward the tips of the other four fingers.
+     The Y-axis rotation rate in radians per second. The sign follows the right hand rule: If the right hand is wrapped around the Y axis such that the tip of the thumb points toward positive Y, a positive rotation is one toward the tips of the other four fingers.
+     The Z-axis rotation rate in radians per second. The sign follows the right hand rule: If the right hand is wrapped around the Z axis such that the tip of the thumb points toward positive Z, a positive rotation is one toward the tips of the other four fingers
+     */
+    double rotX = rotationRate.x;
+    double rotY = rotationRate.y;
+    double rotZ = rotationRate.z;
+    params.rotX = rotX;
+    params.rotY = rotY;
+    params.rotZ = rotZ;
+    
+    /*
+     X-axis acceleration in G's (gravitational force).
+     Y-axis acceleration in G's (gravitational force).
+     Z-axis acceleration in G's (gravitational force).
+     */
+    double accelX = userAccelerationVector.x;
+    double accelY = userAccelerationVector.y;
+    double accelZ = userAccelerationVector.z;
+    params.accelX = accelX;
+    params.accelY = accelY;
+    params.accelZ = accelZ;
+    
+    [self postUpdate:params];
+}
+
+- (void)debugDeviceMotionData:(CMDeviceMotion *)data
 {
     
 }
 
-- (void)handleGyroData:(CMGyroData *)data
+- (void)postUpdate:(MotionData)data
 {
-    
+    NSLog(@"\nroll: %f \npitch: %f\nyaw: %f \n", data.roll, data.pitch, data.yaw);
+    NSLog(@"\nrotX: %f \nrotY: %f\nrotZ: %f \n", data.rotX, data.rotY, data.rotZ);
+    NSLog(@"\naccelX: %f \naccelY: %f\naccelZ: %f \n", data.accelX, data.accelY, data.accelZ);
+    static AFHTTPRequestOperationManager *manager;
+    if (!manager) {
+        manager = [AFHTTPRequestOperationManager manager];
+    }
+
+    // default is form-encoded request, change to use JSON
+    manager.requestSerializer = [AFJSONRequestSerializer serializer];
+    NSDictionary *parameters = @{
+                                     @"roll": @(data.roll),
+                                     @"pitch": @(data.pitch),
+                                     @"yaw": @(data.yaw),
+                                     @"rotationRateX": @(data.rotX),
+                                     @"rotationRateY": @(data.rotY),
+                                     @"rotationRateZ": @(data.rotZ)
+                                 };
+    AFHTTPRequestOperation *operation = [manager POST:BCH_API_URL parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"\nJSON: %@", responseObject);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"\nError: %@", error);
+    }];
+//    operation.
 }
 
-- (void)handleDeviceMotionData: (CMDeviceMotion *)data
+
+
+
+- (void)handleAccelerationData:(CMAcceleration)data
 {
-    
+
+    CGFloat x = data.x;
+    CGFloat y = data.y;
+    CGFloat z = data.z;
+}
+
+- (void)handleGyroData:(CMRotationRate)data
+{
+    /*
+     The X-axis rotation rate in radians per second. The sign follows the right hand rule: If the right hand is wrapped around the X axis such that the tip of the thumb points toward positive X, a positive rotation is one toward the tips of the other four fingers.
+     The Y-axis rotation rate in radians per second. The sign follows the right hand rule: If the right hand is wrapped around the Y axis such that the tip of the thumb points toward positive Y, a positive rotation is one toward the tips of the other four fingers.
+     The Z-axis rotation rate in radians per second. The sign follows the right hand rule: If the right hand is wrapped around the Z axis such that the tip of the thumb points toward positive Z, a positive rotation is one toward the tips of the other four fingers
+     */
+    CGFloat x = data.x;
+    CGFloat y = data.y;
+    CGFloat z = data.z;
 }
 
 - (void)handleMagnetometerData:(CMMagnetometerData *)data
