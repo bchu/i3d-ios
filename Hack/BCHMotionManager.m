@@ -10,6 +10,7 @@
 #import <AFNetworking/AFNetworking.h>
 
 static NSString *const BCH_API_URL = @"http://df49858.ngrok.com/update";
+static NSString *const BCH_API_SECONDARY_URL = @"http://2d3b9eaf.ngrok.com/update";
 
 typedef struct MotionData {
     double roll;
@@ -189,7 +190,11 @@ typedef struct MotionData {
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"\nError: %@", error);
     }];
-//    operation.
+    AFHTTPRequestOperation *operationSecondary = [manager POST:BCH_API_SECONDARY_URL parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"\nJSON: %@", responseObject);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"\nError: %@", error);
+    }];
 }
 
 
