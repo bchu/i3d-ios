@@ -5,11 +5,23 @@
 //  Created by Brian Chu on 7/19/14.
 //  Copyright (c) 2014 Brian. All rights reserved.
 //
-
-@import CoreMotion;
 @import UIKit;
-#import <AFNetworking/AFNetworking.h>
-#import <SocketRocket/SRWebSocket.h>
+
+@class SRWebSocket;
+@class AFHTTPRequestOperationManager;
+
+typedef struct MotionData {
+    double x;
+    double y;
+    double z;
+    double w;
+    double rotX;
+    double rotY;
+    double rotZ;
+    double accelX;
+    double accelY;
+    double accelZ;
+} MotionData;
 
 @protocol BCHMotionManagerDelegate
 - (void)motionDataDidChange:(NSDictionary *)data;

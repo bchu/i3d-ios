@@ -13,6 +13,7 @@
  * of nil if the recording failed/could not be saved.
  */
 @protocol ScreenCaptureViewDelegate <NSObject>
+- (void) updateImage:(UIImage *)image;
 - (void) recordingFinished:(NSString*)outputPathOrNil;
 @end
 
@@ -63,8 +64,9 @@
 - (void) stopRecording;
 
 //for accessing the current screen and adjusting the capture rate, etc.
-@property(retain) UIImage* currentScreen;
-@property(assign) float frameRate;
-@property(nonatomic, assign) id<ScreenCaptureViewDelegate> delegate;
+@property (strong) UIImage* currentScreen;
+@property float frameRate;
+@property (weak) id<ScreenCaptureViewDelegate> delegate;
+//@property (strong) UIImage *image;
 
 @end

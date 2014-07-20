@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		854835E490C44BCD9AC65E5C /* libPods-Hack.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FC99FA9E76A4356B1504A7B /* libPods-Hack.a */; };
 		D3585935197B583A0026F4AC /* BCHScreenCaptureView.m in Sources */ = {isa = PBXBuildFile; fileRef = D3585934197B583A0026F4AC /* BCHScreenCaptureView.m */; };
+		D3836104197BA3EC008C54C0 /* BCHDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D3836103197BA3EC008C54C0 /* BCHDataManager.m */; };
 		D39DF294197B02C100C4EC2C /* BCHMotionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D39DF293197B02C100C4EC2C /* BCHMotionManager.m */; };
 		D3FD2DE5197AFDF200EE8DD6 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D3FD2DE4197AFDF200EE8DD6 /* main.m */; };
 		D3FD2DE8197AFDF200EE8DD6 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D3FD2DE7197AFDF200EE8DD6 /* AppDelegate.m */; };
@@ -33,6 +34,8 @@
 		B10C51828A8C466BB54B61E0 /* Pods-Hack.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hack.xcconfig"; path = "Pods/Pods-Hack.xcconfig"; sourceTree = "<group>"; };
 		D3585933197B583A0026F4AC /* BCHScreenCaptureView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BCHScreenCaptureView.h; sourceTree = "<group>"; };
 		D3585934197B583A0026F4AC /* BCHScreenCaptureView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BCHScreenCaptureView.m; sourceTree = "<group>"; };
+		D3836102197BA3EC008C54C0 /* BCHDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BCHDataManager.h; sourceTree = "<group>"; };
+		D3836103197BA3EC008C54C0 /* BCHDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BCHDataManager.m; sourceTree = "<group>"; };
 		D39DF292197B02C100C4EC2C /* BCHMotionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BCHMotionManager.h; sourceTree = "<group>"; };
 		D39DF293197B02C100C4EC2C /* BCHMotionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BCHMotionManager.m; sourceTree = "<group>"; };
 		D3FD2DDF197AFDF200EE8DD6 /* Hack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hack.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -93,6 +96,8 @@
 			children = (
 				D3FD2DE6197AFDF200EE8DD6 /* AppDelegate.h */,
 				D3FD2DE7197AFDF200EE8DD6 /* AppDelegate.m */,
+				D3836102197BA3EC008C54C0 /* BCHDataManager.h */,
+				D3836103197BA3EC008C54C0 /* BCHDataManager.m */,
 				D39DF292197B02C100C4EC2C /* BCHMotionManager.h */,
 				D39DF293197B02C100C4EC2C /* BCHMotionManager.m */,
 				D3585933197B583A0026F4AC /* BCHScreenCaptureView.h */,
@@ -277,6 +282,7 @@
 				D3FD2DEB197AFDF200EE8DD6 /* ViewController.m in Sources */,
 				D3FD2DE8197AFDF200EE8DD6 /* AppDelegate.m in Sources */,
 				D3585935197B583A0026F4AC /* BCHScreenCaptureView.m in Sources */,
+				D3836104197BA3EC008C54C0 /* BCHDataManager.m in Sources */,
 				D3FD2DE5197AFDF200EE8DD6 /* main.m in Sources */,
 				D39DF294197B02C100C4EC2C /* BCHMotionManager.m in Sources */,
 			);

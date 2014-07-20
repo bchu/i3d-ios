@@ -5,11 +5,8 @@
 @import QuartzCore;
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <AssetsLibrary/AssetsLibrary.h>
-#import <AFNetworking/AFNetworking.h>
-#import "BCHMotionManager.h"
 
-static NSString *const BCH_API_IMAGE = @"http://df49858.ngrok.com/screencast";
-static NSString *const BCH_API_IMAGE_SECONDARY = @"http://d2e05a5.ngrok.com/screencast";
+#import "BCHDataManager.h"
 
 @interface BCHScreenCaptureView() <AVCaptureVideoDataOutputSampleBufferDelegate>
 - (void) writeVideoFrameAtTime:(CMTime)time;
@@ -53,7 +50,7 @@ static NSString *const BCH_API_IMAGE_SECONDARY = @"http://d2e05a5.ngrok.com/scre
     //
     //        // go!
     //        [captureSession startRunning];
-    [self startRecording];
+//    [self startRecording];
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
@@ -105,6 +102,7 @@ static NSString *const BCH_API_IMAGE_SECONDARY = @"http://d2e05a5.ngrok.com/scre
     bitmapData = malloc( bitmapByteCount );
     if (bitmapData == NULL) {
         fprintf (stderr, "Memory not allocated!");
+        CGColorSpaceRelease( colorSpace );
         return NULL;
     }
     
@@ -142,8 +140,12 @@ static NSString *const BCH_API_IMAGE_SECONDARY = @"http://d2e05a5.ngrok.com/scre
     UIImage* background = [UIImage imageWithCGImage: cgImage];
     CGImageRelease(cgImage);
     
-    self.currentScreen = background;
-    
+//    self.currentScreen = background;
+
+    NSData *data = UIImageJPEGRepresentation(background, 0.5);
+    BCHDataManager *dataManager = [BCHDataManager sharedInstance];
+    [dataManager postScreencastImageData:data];
+
     //debugging
     //if (frameCount < 40) {
     //      NSString* filename = [NSString stringWithFormat:@"Documents/frame_%d.png", frameCount];
@@ -294,7 +296,7 @@ static NSString *const BCH_API_IMAGE_SECONDARY = @"http://d2e05a5.ngrok.com/scre
             CVPixelBufferRef pixelBuffer = NULL;
             CGImageRef cgImage = CGImageCreateCopy([newFrame CGImage]);
             CFDataRef image = CGDataProviderCopyData(CGImageGetDataProvider(cgImage));
-            
+
             int status = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, avAdaptor.pixelBufferPool, &pixelBuffer);
             if(status != 0){
                 //could not get a buffer from the pool
@@ -304,69 +306,8 @@ static NSString *const BCH_API_IMAGE_SECONDARY = @"http://d2e05a5.ngrok.com/scre
             CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
             uint8_t* destPixels = CVPixelBufferGetBaseAddress(pixelBuffer);
             CFDataGetBytes(image, CFRangeMake(0, CFDataGetLength(image)), destPixels);  //XXX:  will work if the pixel buffer is contiguous and has the same bytesPerRow as the input data
-            
-            
-            
-            
-            
-            int w = CVPixelBufferGetWidth(pixelBuffer);
-            int h = CVPixelBufferGetHeight(pixelBuffer);
-            int r = CVPixelBufferGetBytesPerRow(pixelBuffer);
-            int bytesPerPixel = r/w;
-            
-            unsigned char *buffer = CVPixelBufferGetBaseAddress(pixelBuffer);
-            
-            UIGraphicsBeginImageContext(CGSizeMake(w, h));
-            
-            CGContextRef c = UIGraphicsGetCurrentContext();
-            
-            unsigned char* data = CGBitmapContextGetData(c);
-            if (data != NULL) {
-                int maxY = h;
-                for(int y = 0; y<maxY; y++) {
-                    for(int x = 0; x<w; x++) {
-                        int offset = bytesPerPixel*((w*y)+x);
-                        data[offset] = buffer[offset];     // R
-                        data[offset+1] = buffer[offset+1]; // G
-                        data[offset+2] = buffer[offset+2]; // B
-                        data[offset+3] = buffer[offset+3]; // A
-                    }
-                }
-            } 
-            UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
-            
-            UIGraphicsEndImageContext();
-            
-            
-            // Form the URL request
-            NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:BCH_API_IMAGE parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-                [formData appendPartWithFileData:UIImageJPEGRepresentation(img, 1.0) name:@"image" fileName:@"original.jpg" mimeType:@"image/jpeg"];
-            } error:nil];
-            
-            // Add the operations
-            AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
-            [[BCHMotionManager sharedInstance].httpManager.operationQueue addOperation:operation];
-            
-            NSLog(@"Uploading");
-            
-            
-//            NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:@"http://example.com/upload" parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-//                [formData appendPartWithFileURL:[NSURL fileURLWithPath:@"file://path/to/image.jpg"] name:@"file" fileName:@"filename.jpg" mimeType:@"image/jpeg" error:nil];
-//            } error:nil];
-//            
-//            AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
-//            NSProgress *progress = nil;
-//            
-//            NSURLSessionUploadTask *uploadTask = [manager uploadTaskWithStreamedRequest:request progress:&progress completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
-//                if (error) {
-//                    NSLog(@"Error: %@", error);
-//                } else {
-//                    NSLog(@"%@ %@", response, responseObject);
-//                }
-//            }];
-//            
-//            [uploadTask resume];
-            
+
+
             
 //            if(status == 0){
 //                BOOL success = [avAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:time];

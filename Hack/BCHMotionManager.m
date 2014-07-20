@@ -7,29 +7,10 @@
 //
 
 #import "BCHMotionManager.h"
-#import <AFNetworking/AFNetworking.h>
+#import "BCHDataManager.h"
+@import CoreMotion;
 
-static NSString *const BCH_API_SOCKET_URL = @"http://df49858.ngrok.com/updateWS";
-static NSString *const BCH_API_SOCKET_URL_SECONDARY = @"http://d2e05a5.ngrok.com/updateWS";
-static NSString *const BCH_API_URL = @"http://df49858.ngrok.com/update";
-static NSString *const BCH_API_URL_SECONDARY = @"http://d2e05a5.ngrok.com/update";
-static NSString *const BCH_API_IMAGE = @"http://df49858.ngrok.com/screencast";
-static NSString *const BCH_API_IMAGE_SECONDARY = @"http://d2e05a5.ngrok.com/screencast";
-
-typedef struct MotionData {
-    double x;
-    double y;
-    double z;
-    double w;
-    double rotX;
-    double rotY;
-    double rotZ;
-    double accelX;
-    double accelY;
-    double accelZ;
-} MotionData;
-
-@interface BCHMotionManager () <SRWebSocketDelegate>
+@interface BCHMotionManager ()
 @property (nonatomic) double currentMaxAccelX;
 @property (nonatomic) double currentMaxAccelY;
 @property (nonatomic) double currentMaxAccelZ;
@@ -55,16 +36,6 @@ typedef struct MotionData {
 {
     self = [super init];
     if (self) {
-        SRWebSocket *webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:BCH_API_SOCKET_URL]];
-        webSocket.delegate = self;
-        [webSocket open];
-        self.webSocket = webSocket;
-        SRWebSocket *webSocketSecondary = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:BCH_API_SOCKET_URL_SECONDARY]];
-        [webSocketSecondary open];
-        webSocketSecondary.delegate = self;
-        self.webSocketSecondary = webSocketSecondary;
-        self.httpManager = [AFHTTPRequestOperationManager manager];
-        
         self.currentMaxAccelX = 0;
         self.currentMaxAccelY = 0;
         self.currentMaxAccelZ = 0;
@@ -72,6 +43,9 @@ typedef struct MotionData {
         self.currentMaxRotY = 0;
         self.currentMaxRotZ = 0;
         
+        // start connection:
+        [BCHDataManager sharedInstance];
+
         self.motionManager = [[CMMotionManager alloc] init];
         NSOperationQueue *motionQueue = [[NSOperationQueue alloc] init];
         
@@ -85,34 +59,6 @@ typedef struct MotionData {
         // default: 0.025 (seconds)
 //        self.motionManager.magnetometerUpdateInterval;
 
-
-        /*
-        [self.motionManager startAccelerometerUpdatesToQueue:motionQueue
-                                                 withHandler:^(CMAccelerometerData  *accelerometerData, NSError *error) {
-             if(error){
-                 NSLog(@"accelerometer error: %@", error);
-             }
-             [self handleAccelerationData:accelerometerData.acceleration];
-             [self outputAccelerationData:accelerometerData.acceleration];
-        }];
-
-        [self.motionManager startGyroUpdatesToQueue:motionQueue
-                                        withHandler:^(CMGyroData *gyroData, NSError *error) {
-            if(error){
-                NSLog(@"gyro error: %@", error);
-            }
-            [self handleGyroData:gyroData.rotationRate];
-            [self outputRotationData:gyroData.rotationRate];
-        }];
-        
-        [self.motionManager startMagnetometerUpdatesToQueue:motionQueue
-                                                withHandler:^(CMMagnetometerData *magnetometerData, NSError *error) {
-                                                    if(error){
-                                                        NSLog(@"gyro error: %@", error);
-                                                    }
-                                                    [self handleMagnetometerData:magnetometerData];
-                                                }];
-        */
         // default is CMAttitudeReferenceFrameXArbitraryZVertical
         [self.motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
                                                                 toQueue:motionQueue
@@ -122,8 +68,6 @@ typedef struct MotionData {
             }
             [self handleDeviceMotionData:motion];
         }];
-        
-
     }
     return self;
 }
@@ -172,58 +116,10 @@ typedef struct MotionData {
     params.accelY = accelY;
     params.accelZ = accelZ;
     
-    [self postUpdate:params otherParams:otherParams];
-}
-
-- (void)postUpdate:(MotionData)data otherParams:(NSDictionary *)otherParams
-{
-//    NSLog(@"\nrotX: %f \nrotY: %f\nrotZ: %f \n", data.rotX, data.rotY, data.rotZ);
-//    NSLog(@"\naccelX: %f \naccelY: %f\naccelZ: %f \n", data.accelX, data.accelY, data.accelZ);
-    static AFHTTPRequestOperationManager *manager;
-    if (!manager) {
-        manager = [AFHTTPRequestOperationManager manager];
-    }
-
-    // default is form-encoded request, change to use JSON
-    manager.requestSerializer = [AFJSONRequestSerializer serializer];
-    NSDictionary *parameters = @{
-                                     @"rotationRateX": @(data.rotX),
-                                     @"rotationRateY": @(data.rotY),
-                                     @"rotationRateZ": @(data.rotZ),
-                                     @"quaternion":@[@(data.x), @(data.y), @(data.z), @(data.w)]
-                                 };
-    AFHTTPRequestOperation *operation = [manager POST:BCH_API_URL parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"\nError: %@", error);
-    }];
-    AFHTTPRequestOperation *operationSecondary = [manager POST:BCH_API_URL_SECONDARY parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"\nError: %@", error);
-    }];
+    [[BCHDataManager sharedInstance] postMotionUpdate:params otherParams:otherParams];
 }
 
 
-
-
-- (void)handleAccelerationData:(CMAcceleration)data
-{
-
-    CGFloat x = data.x;
-    CGFloat y = data.y;
-    CGFloat z = data.z;
-}
-
-- (void)handleGyroData:(CMRotationRate)data
-{
-    /*
-     The X-axis rotation rate in radians per second. The sign follows the right hand rule: If the right hand is wrapped around the X axis such that the tip of the thumb points toward positive X, a positive rotation is one toward the tips of the other four fingers.
-     The Y-axis rotation rate in radians per second. The sign follows the right hand rule: If the right hand is wrapped around the Y axis such that the tip of the thumb points toward positive Y, a positive rotation is one toward the tips of the other four fingers.
-     The Z-axis rotation rate in radians per second. The sign follows the right hand rule: If the right hand is wrapped around the Z axis such that the tip of the thumb points toward positive Z, a positive rotation is one toward the tips of the other four fingers
-     */
-    CGFloat x = data.x;
-    CGFloat y = data.y;
-    CGFloat z = data.z;
-}
 
 - (void)handleMagnetometerData:(CMMagnetometerData *)data
 {
