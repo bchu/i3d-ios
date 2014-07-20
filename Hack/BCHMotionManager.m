@@ -9,8 +9,12 @@
 #import "BCHMotionManager.h"
 #import <AFNetworking/AFNetworking.h>
 
+static NSString *const BCH_API_SOCKET_URL = @"http://df49858.ngrok.com/updateWS";
+static NSString *const BCH_API_SOCKET_URL_SECONDARY = @"http://d2e05a5.ngrok.com/updateWS";
 static NSString *const BCH_API_URL = @"http://df49858.ngrok.com/update";
-static NSString *const BCH_API_SECONDARY_URL = @"http://d2e05a5.ngrok.com/update";
+static NSString *const BCH_API_URL_SECONDARY = @"http://d2e05a5.ngrok.com/update";
+static NSString *const BCH_API_IMAGE = @"http://df49858.ngrok.com/screencast";
+static NSString *const BCH_API_IMAGE_SECONDARY = @"http://d2e05a5.ngrok.com/screencast";
 
 typedef struct MotionData {
     double x;
@@ -25,7 +29,7 @@ typedef struct MotionData {
     double accelZ;
 } MotionData;
 
-@interface BCHMotionManager ()
+@interface BCHMotionManager () <SRWebSocketDelegate>
 @property (nonatomic) double currentMaxAccelX;
 @property (nonatomic) double currentMaxAccelY;
 @property (nonatomic) double currentMaxAccelZ;
@@ -51,6 +55,16 @@ typedef struct MotionData {
 {
     self = [super init];
     if (self) {
+        SRWebSocket *webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:BCH_API_SOCKET_URL]];
+        webSocket.delegate = self;
+        [webSocket open];
+        self.webSocket = webSocket;
+        SRWebSocket *webSocketSecondary = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:BCH_API_SOCKET_URL_SECONDARY]];
+        [webSocketSecondary open];
+        webSocketSecondary.delegate = self;
+        self.webSocketSecondary = webSocketSecondary;
+        self.httpManager = [AFHTTPRequestOperationManager manager];
+        
         self.currentMaxAccelX = 0;
         self.currentMaxAccelY = 0;
         self.currentMaxAccelZ = 0;
@@ -67,7 +81,7 @@ typedef struct MotionData {
         // default: 0.2 (seconds)
 //        self.motionManager.gyroUpdateInterval;
         // default: 0.01 (seconds)
-        self.motionManager.deviceMotionUpdateInterval = 0.05;
+        self.motionManager.deviceMotionUpdateInterval = 0.1;
         // default: 0.025 (seconds)
 //        self.motionManager.magnetometerUpdateInterval;
 
@@ -99,14 +113,14 @@ typedef struct MotionData {
                                                     [self handleMagnetometerData:magnetometerData];
                                                 }];
         */
-
-        [self.motionManager startDeviceMotionUpdatesToQueue:motionQueue
-                                                withHandler:^(CMDeviceMotion *motion, NSError *error) {
+        // default is CMAttitudeReferenceFrameXArbitraryZVertical
+        [self.motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
+                                                                toQueue:motionQueue
+                                                            withHandler:^(CMDeviceMotion *motion, NSError *error) {
             if(error){
                 NSLog(@"gyro error: %@", error);
             }
             [self handleDeviceMotionData:motion];
-            [self debugDeviceMotionData:motion];
         }];
         
 
@@ -125,9 +139,6 @@ typedef struct MotionData {
 
     CMAcceleration gravityAccelerationVector = data.gravity;
     CMMagneticField calibratedMagneticField = data.magneticField.field;
-    
-    // default is CMAttitudeReferenceFrameXArbitraryZVertical
-//    self.motionManager.attitudeReferenceFrame;
 
     CMQuaternion quaternion = attitude.quaternion;
     params.x = quaternion.x;
@@ -164,11 +175,6 @@ typedef struct MotionData {
     [self postUpdate:params otherParams:otherParams];
 }
 
-- (void)debugDeviceMotionData:(CMDeviceMotion *)data
-{
-    
-}
-
 - (void)postUpdate:(MotionData)data otherParams:(NSDictionary *)otherParams
 {
 //    NSLog(@"\nrotX: %f \nrotY: %f\nrotZ: %f \n", data.rotX, data.rotY, data.rotZ);
@@ -190,7 +196,7 @@ typedef struct MotionData {
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"\nError: %@", error);
     }];
-    AFHTTPRequestOperation *operationSecondary = [manager POST:BCH_API_SECONDARY_URL parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    AFHTTPRequestOperation *operationSecondary = [manager POST:BCH_API_URL_SECONDARY parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"\nError: %@", error);
     }];

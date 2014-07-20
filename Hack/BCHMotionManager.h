@@ -8,6 +8,8 @@
 
 @import CoreMotion;
 @import UIKit;
+#import <AFNetworking/AFNetworking.h>
+#import <SocketRocket/SRWebSocket.h>
 
 @protocol BCHMotionManagerDelegate
 - (void)motionDataDidChange:(NSDictionary *)data;
@@ -15,5 +17,9 @@
 
 @interface BCHMotionManager : NSObject
 @property (strong, nonatomic) id<BCHMotionManagerDelegate> delegate;
+// SRWebSocket retains itself between open and close
+@property (weak, nonatomic) SRWebSocket *webSocket;
+@property (weak, nonatomic) SRWebSocket *webSocketSecondary;
+@property (strong, nonatomic) AFHTTPRequestOperationManager *httpManager;
 + (instancetype)sharedInstance;
 @end
