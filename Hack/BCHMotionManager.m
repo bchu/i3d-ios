@@ -55,7 +55,7 @@
         // default: 0.2 (seconds)
 //        self.motionManager.gyroUpdateInterval;
         // default: 0.01 (seconds)
-        self.motionManager.deviceMotionUpdateInterval = 0.1;
+        self.motionManager.deviceMotionUpdateInterval = 0.025;
         // default: 0.025 (seconds)
 //        self.motionManager.magnetometerUpdateInterval;
 

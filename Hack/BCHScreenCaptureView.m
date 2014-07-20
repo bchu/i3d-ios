@@ -78,15 +78,6 @@
     return self;
 }
 
-//-(void) captureOutput:(AVCaptureOutput*)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection*)connection
-//{
-//    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer( sampleBuffer );
-//    CGSize imageSize = CVImageBufferGetEncodedSize( imageBuffer );
-//    // also in the 'mediaSpecific' dict of the sampleBuffer
-//    
-//    NSLog( @"frame captured at %.fx%.f", imageSize.width, imageSize.height );
-//}
-
 - (CGContextRef) createBitmapContextOfSize:(CGSize) size {
     CGContextRef    context = NULL;
     CGColorSpaceRef colorSpace;
@@ -127,25 +118,40 @@
 
 //static int frameCount = 0;            //debugging
 - (void) drawRect:(CGRect)rect {
-    NSDate* start = [NSDate date];
-    CGContextRef context = [self createBitmapContextOfSize:self.frame.size];
+    [self captureRun];
     
-    //not sure why this is necessary...image renders upside-down and mirrored
-    CGAffineTransform flipVertical = CGAffineTransformMake(1, 0, 0, -1, 0, self.frame.size.height);
-    CGContextConcatCTM(context, flipVertical);
-    
-    [self.layer renderInContext:context];
-    
-    CGImageRef cgImage = CGBitmapContextCreateImage(context);
-    UIImage* background = [UIImage imageWithCGImage: cgImage];
-    CGImageRelease(cgImage);
-    
-//    self.currentScreen = background;
+    //redraw at the specified framerate
+//    [self performSelector:@selector(setNeedsDisplay) withObject:nil afterDelay:delayRemaining > 0.0 ? delayRemaining : 0.01];
+    // 60 fps
+    [self performSelectorInBackground:@selector(setNeedsDisplay) withObject:nil];
+//    [self performSelector:@selector(setNeedsDisplay) withObject:nil afterDelay:0.0];
+}
 
-    NSData *data = UIImageJPEGRepresentation(background, 0.5);
+
+- (void)captureRun
+{
+//    CGContextRef context = [self createBitmapContextOfSize:self.frame.size];
+//    
+//    //not sure why this is necessary...image renders upside-down and mirrored
+//    CGAffineTransform flipVertical = CGAffineTransformMake(1, 0, 0, -1, 0, self.frame.size.height);
+//    CGContextConcatCTM(context, flipVertical);
+//    
+//    [self.layer renderInContext:context];
+//    
+//    CGImageRef cgImage = CGBitmapContextCreateImage(context);
+//    UIImage* background = [UIImage imageWithCGImage: cgImage];
+//    CGImageRelease(cgImage);
+
+    CGSize imageSize = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
+    UIGraphicsBeginImageContext(imageSize);
+    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    NSData *data = UIImageJPEGRepresentation(viewImage, 0.0);
     BCHDataManager *dataManager = [BCHDataManager sharedInstance];
     [dataManager postScreencastImageData:data];
-
+    
     //debugging
     //if (frameCount < 40) {
     //      NSString* filename = [NSString stringWithFormat:@"Documents/frame_%d.png", frameCount];
@@ -161,13 +167,10 @@
         [self writeVideoFrameAtTime:CMTimeMake((int)millisElapsed, 1000)];
     }
     
-    float processingSeconds = [[NSDate date] timeIntervalSinceDate:start];
-    float delayRemaining = (1.0 / self.frameRate) - processingSeconds;
+    //    float processingSeconds = [[NSDate date] timeIntervalSinceDate:start];
+    //    float delayRemaining = (1.0 / self.frameRate) - processingSeconds;
     
-    CGContextRelease(context);
-    
-    //redraw at the specified framerate
-    [self performSelector:@selector(setNeedsDisplay) withObject:nil afterDelay:delayRemaining > 0.0 ? delayRemaining : 0.01];
+//    CGContextRelease(context);
 }
 
 - (void) cleanupWriter {
@@ -224,10 +227,10 @@
     
     avAdaptor = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:videoWriterInput sourcePixelBufferAttributes:bufferAttributes];
     
-    //add input
-    [videoWriter addInput:videoWriterInput];
-    [videoWriter startWriting];
-    [videoWriter startSessionAtSourceTime:CMTimeMake(0, 1000)];
+//    //add input
+//    [videoWriter addInput:videoWriterInput];
+//    [videoWriter startWriting];
+//    [videoWriter startSessionAtSourceTime:CMTimeMake(0, 1000)];
     
     return YES;
 }

@@ -21,8 +21,8 @@
 
     self.manager = [BCHMotionManager sharedInstance];
     self.window = [[BCHScreenCaptureView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    ViewController *vc = [[ViewController alloc] init];
-    vc.view.backgroundColor = [UIColor redColor];
+    
+    UIViewController *vc = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateInitialViewController];
     self.window.rootViewController = vc;
     [self.window makeKeyAndVisible];
     return YES;
