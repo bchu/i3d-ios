@@ -45,13 +45,18 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 //        webSocket.delegate = self;
 //        [webSocket open];
 //        self.webSocket = webSocket;
-        SRWebSocket *webSocketSecondary = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:BCH_API_HOST_SOCKET]];
-        webSocketSecondary.delegate = self;
-        [webSocketSecondary open];
-        self.webSocketSecondary = webSocketSecondary;
+        self.webSocketSecondary = [self createWebSocket:BCH_API_HOST_SOCKET];
         self.httpManager = [AFHTTPRequestOperationManager manager];
     }
     return self;
+}
+
+- (SRWebSocket *)createWebSocket:(NSString *)url
+{
+    SRWebSocket *socket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:url]];
+    socket.delegate = self;
+    [socket open];
+    return socket;
 }
 
 - (void)postMotionUpdate:(MotionData)data otherParams:(NSDictionary *)otherParams
@@ -69,7 +74,10 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
                                  @"rotationRateX": @(data.rotX),
                                  @"rotationRateY": @(data.rotY),
                                  @"rotationRateZ": @(data.rotZ),
-                                 @"quaternion":@[@(data.x), @(data.y), @(data.z), @(data.w)]
+                                 @"quaternion":@[@(data.x), @(data.y), @(data.z), @(data.w)],
+                                 @"accelerationX":@(data.accelX),
+                                 @"accelerationY":@(data.accelY),
+                                 @"accelerationZ":@(data.accelZ)
                                  };
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
     if (self.webSocket.readyState == SR_OPEN) {
@@ -123,24 +131,19 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
     }
 }
 
+- (void)attemptReconnection: (SRWebSocket *)webSocket
+{
+    if (!self.webSocket) {
+        self.webSocket = [self createWebSocket:BCH_API_HOST_SOCKET];
+    }
+    if (!self.webSocketSecondary) {
+        self.webSocketSecondary = [self createWebSocket:BCH_API_HOST_SOCKET];
+    }
+}
+
 - (void)applicationDidBecomeActive: (NSNotification *)notification
 {
     [self attemptReconnection:nil];
-}
-
-- (void)attemptReconnection: (SRWebSocket *)webSocket
-{
-    if (!webSocket) {
-        if (self.webSocket.readyState == SR_CLOSED) {
-            [self.webSocket open];
-        }
-        if (self.webSocketSecondary.readyState == SR_CLOSED) {
-            [self.webSocketSecondary open];
-        }
-    }
-    else if (webSocket.readyState == SR_CLOSED) {
-        [webSocket open];
-    }
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error
