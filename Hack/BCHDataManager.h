@@ -19,6 +19,7 @@
 @property (strong, nonatomic) AFHTTPRequestOperationManager *httpManager;
 
 + (instancetype)sharedInstance;
+- (void)attemptReconnection: (SRWebSocket *)webSocket;
 - (void)postMotionUpdate:(MotionData)data otherParams:(NSDictionary *)otherParams;
 - (void)postScreencastImageData:(NSData *)data;
 @end

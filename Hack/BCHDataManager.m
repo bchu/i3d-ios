@@ -37,6 +37,10 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 {
     self = [super init];
     if (self) {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationDidBecomeActive:)
+                                                     name:UIApplicationDidBecomeActiveNotification object:nil];
+        
 //        SRWebSocket *webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:BCH_API_SOCKET_URL]];
 //        webSocket.delegate = self;
 //        [webSocket open];
@@ -119,13 +123,30 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
     }
 }
 
+- (void)applicationDidBecomeActive: (NSNotification *)notification
+{
+    [self attemptReconnection:nil];
+}
+
+- (void)attemptReconnection: (SRWebSocket *)webSocket
+{
+    if (!webSocket) {
+        if (self.webSocket.readyState == SR_CLOSED) {
+            [self.webSocket open];
+        }
+        if (self.webSocketSecondary.readyState == SR_CLOSED) {
+            [self.webSocketSecondary open];
+        }
+    }
+    else if (webSocket.readyState == SR_CLOSED) {
+        [webSocket open];
+    }
+}
+
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error
 {
     NSLog(@"websocket failed: %@", error);
-    if (webSocket.readyState == SR_CLOSED) {
-        //        [webSocket open];
-    }
-    
+    [self attemptReconnection:webSocket];
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket
