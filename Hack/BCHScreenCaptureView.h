@@ -47,7 +47,7 @@
 @import AVFoundation;
 @import AssetsLibrary;
 
-@interface BCHScreenCaptureView : UIView {
+@interface BCHScreenCaptureView : UIWindow {
     //video writing
     AVAssetWriter *videoWriter;
     AVAssetWriterInput *videoWriterInput;

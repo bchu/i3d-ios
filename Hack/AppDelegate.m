@@ -8,6 +8,7 @@
 
 #import "AppDelegate.h"
 #import "BCHMotionManager.h"
+#import "BCHScreenCaptureView.h"
 #import "ViewController.h"
 
 @interface AppDelegate ()
@@ -19,7 +20,11 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     self.manager = [BCHMotionManager sharedInstance];
-
+    self.window = [[BCHScreenCaptureView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    ViewController *vc = [[ViewController alloc] init];
+    vc.view.backgroundColor = [UIColor redColor];
+    self.window.rootViewController = vc;
+    [self.window makeKeyAndVisible];
     return YES;
 }
 
