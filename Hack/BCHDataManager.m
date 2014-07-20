@@ -11,6 +11,7 @@
 #import "BCHDataManager.h"
 
 static NSString *const BCH_API_HOST = @"http://df49858.ngrok.com";
+
 static NSString *const BCH_API_HOST_SECONDARY = @"http://ngrok.com:56515";
 static NSString *const BCH_API_HOST_SOCKET = @"ws://ngrok.com:51860";
 
@@ -61,8 +62,6 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 - (void)postMotionUpdate:(MotionData)data otherParams:(NSDictionary *)otherParams
 {
-    //    NSLog(@"\nrotX: %f \nrotY: %f\nrotZ: %f \n", data.rotX, data.rotY, data.rotZ);
-    //    NSLog(@"\naccelX: %f \naccelY: %f\naccelZ: %f \n", data.accelX, data.accelY, data.accelZ);
     static AFHTTPRequestOperationManager *manager;
     if (!manager) {
         manager = [AFHTTPRequestOperationManager manager];
