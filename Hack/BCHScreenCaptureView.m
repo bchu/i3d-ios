@@ -19,7 +19,7 @@
 - (void)initialize
 {
     // Initialization code
-    self.clearsContextBeforeDrawing = YES;
+//    self.clearsContextBeforeDrawing = YES;
     self.currentScreen = nil;
     self.frameRate = 10.0f;     //10 frames per seconds
     _recording = false;
@@ -78,99 +78,25 @@
     return self;
 }
 
-- (CGContextRef) createBitmapContextOfSize:(CGSize) size {
-    CGContextRef    context = NULL;
-    CGColorSpaceRef colorSpace;
-    int             bitmapByteCount;
-    int             bitmapBytesPerRow;
-    
-    bitmapBytesPerRow   = (size.width * 4);
-    bitmapByteCount     = (bitmapBytesPerRow * size.height);
-    colorSpace = CGColorSpaceCreateDeviceRGB();
-    if (bitmapData != NULL) {
-        free(bitmapData);
-    }
-    bitmapData = malloc( bitmapByteCount );
-    if (bitmapData == NULL) {
-        fprintf (stderr, "Memory not allocated!");
-        CGColorSpaceRelease( colorSpace );
-        return NULL;
-    }
-    
-    context = CGBitmapContextCreate (bitmapData,
-                                     size.width,
-                                     size.height,
-                                     8,      // bits per component
-                                     bitmapBytesPerRow,
-                                     colorSpace,
-                                     kCGImageAlphaNoneSkipFirst);
-    
-    CGContextSetAllowsAntialiasing(context,NO);
-    if (context== NULL) {
-        free (bitmapData);
-        fprintf (stderr, "Context not created!");
-        return NULL;
-    }
-    CGColorSpaceRelease( colorSpace );
-    
-    return context;
-}
-
-//static int frameCount = 0;            //debugging
 - (void) drawRect:(CGRect)rect {
     [self captureRun];
-    
-    //redraw at the specified framerate
-//    [self performSelector:@selector(setNeedsDisplay) withObject:nil afterDelay:delayRemaining > 0.0 ? delayRemaining : 0.01];
-    // 60 fps
+
     [self performSelectorInBackground:@selector(setNeedsDisplay) withObject:nil];
-//    [self performSelector:@selector(setNeedsDisplay) withObject:nil afterDelay:0.0];
 }
 
 
 - (void)captureRun
 {
-//    CGContextRef context = [self createBitmapContextOfSize:self.frame.size];
-//    
-//    //not sure why this is necessary...image renders upside-down and mirrored
-//    CGAffineTransform flipVertical = CGAffineTransformMake(1, 0, 0, -1, 0, self.frame.size.height);
-//    CGContextConcatCTM(context, flipVertical);
-//    
-//    [self.layer renderInContext:context];
-//    
-//    CGImageRef cgImage = CGBitmapContextCreateImage(context);
-//    UIImage* background = [UIImage imageWithCGImage: cgImage];
-//    CGImageRelease(cgImage);
-
     CGSize imageSize = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
-    UIGraphicsBeginImageContext(imageSize);
-    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
-    UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsBeginImageContextWithOptions(imageSize, YES, 1);
+    [self drawViewHierarchyInRect:self.bounds afterScreenUpdates:YES];
+    
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
-    NSData *data = UIImageJPEGRepresentation(viewImage, 0.0);
+    NSData *data = UIImageJPEGRepresentation(image, 0.0);
     BCHDataManager *dataManager = [BCHDataManager sharedInstance];
     [dataManager postScreencastImageData:data];
-    
-    //debugging
-    //if (frameCount < 40) {
-    //      NSString* filename = [NSString stringWithFormat:@"Documents/frame_%d.png", frameCount];
-    //      NSString* pngPath = [NSHomeDirectory() stringByAppendingPathComponent:filename];
-    //      [UIImagePNGRepresentation(self.currentScreen) writeToFile: pngPath atomically: YES];
-    //      frameCount++;
-    //}
-    
-    //NOTE:  to record a scrollview while it is scrolling you need to implement your UIScrollViewDelegate such that it calls
-    //       'setNeedsDisplay' on the ScreenCaptureView.
-    if (_recording) {
-        float millisElapsed = [[NSDate date] timeIntervalSinceDate:startedAt] * 1000.0;
-        [self writeVideoFrameAtTime:CMTimeMake((int)millisElapsed, 1000)];
-    }
-    
-    //    float processingSeconds = [[NSDate date] timeIntervalSinceDate:start];
-    //    float delayRemaining = (1.0 / self.frameRate) - processingSeconds;
-    
-//    CGContextRelease(context);
 }
 
 - (void) cleanupWriter {
