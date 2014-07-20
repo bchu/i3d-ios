@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "BCHScreenCaptureView.h"
 
 @interface ViewController : UIViewController
 @end
