@@ -144,7 +144,7 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error
 {
-    NSLog(@"websocket failed: %@", error);
+//    NSLog(@"websocket failed: %@", error);
     [self attemptReconnection:webSocket];
 }
 
