@@ -15,7 +15,7 @@
 @interface BCHDataManager : NSObject
 // SRWebSocket retains itself between open and close
 @property (weak, nonatomic) SRWebSocket *webSocket;
-@property (weak, nonatomic) SRWebSocket *webSocketSecondary;
+@property (strong, nonatomic) NSMutableArray *webSocketTests;
 @property (strong, nonatomic) AFHTTPRequestOperationManager *httpManager;
 
 + (instancetype)sharedInstance;

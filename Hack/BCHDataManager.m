@@ -10,19 +10,28 @@
 #import <AFNetworking/AFNetworking.h>
 #import "BCHDataManager.h"
 
-static NSString *const BCH_API_HOST = @"http://df49858.ngrok.com";
+static NSString *const BCH_API_HOST = @"http://example.com";
+static NSArray *BCH_API_HOST_TESTS;
 
-static NSString *const BCH_API_HOST_SECONDARY = @"http://ngrok.com:56515";
-static NSString *const BCH_API_HOST_SOCKET = @"ws://ngrok.com:51860";
+static NSString *const BCH_HTTP = @"http://";
+static NSString *const BCH_WS = @"ws://";
 
+static NSString *const BCH_API_PATH_SOCKET = @"/socket";
 static NSString *const BCH_API_PATH_IMAGE = @"/screencast";
-static NSString *const BCH_API_PATH_SOCKET = @"/updateWS";
 static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 @interface BCHDataManager () <SRWebSocketDelegate>
 @end
 
 @implementation BCHDataManager
+
++ (void)initialize
+{
+    // format is http, ws
+    BCH_API_HOST_TESTS = @[
+                           @[@"http://ngrok.com:54126", @"http://ngrok.com:39635"]
+                           ];
+}
 
 + (instancetype)sharedInstance
 {
@@ -41,13 +50,14 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(applicationDidBecomeActive:)
                                                      name:UIApplicationDidBecomeActiveNotification object:nil];
-        
-//        SRWebSocket *webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:BCH_API_SOCKET_URL]];
-//        webSocket.delegate = self;
-//        [webSocket open];
-//        self.webSocket = webSocket;
-        self.webSocketSecondary = [self createWebSocket:BCH_API_HOST_SOCKET];
+
+//        self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
+        self.webSocketTests = [NSMutableArray array];
+        for (NSArray *testHost in BCH_API_HOST_TESTS) {
+            [self.webSocketTests addObject:[self createWebSocket:[testHost[1] stringByAppendingString:BCH_API_PATH_SOCKET]]];
+        }
         self.httpManager = [AFHTTPRequestOperationManager manager];
+        self.httpManager.requestSerializer = [AFJSONRequestSerializer serializer];
     }
     return self;
 }
@@ -62,13 +72,6 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 - (void)postMotionUpdate:(MotionData)data otherParams:(NSDictionary *)otherParams
 {
-    static AFHTTPRequestOperationManager *manager;
-    if (!manager) {
-        manager = [AFHTTPRequestOperationManager manager];
-    }
-    
-    // default is form-encoded request, change to use JSON
-    manager.requestSerializer = [AFJSONRequestSerializer serializer];
     NSDictionary *parameters = @{
                                  @"rotationRateX": @(data.rotX),
                                  @"rotationRateY": @(data.rotY),
@@ -79,21 +82,20 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
                                  @"accelerationZ":@(data.accelZ)
                                  };
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
-    if (self.webSocket.readyState == SR_OPEN) {
-        [self.webSocket send:[[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding]];
-    }
-    else {
-        AFHTTPRequestOperation *operation = [manager POST:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_HTTP] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            //        NSLog(@"\nError: %@", error);
-        }];
-    }
+//    [self postMotionUpdateHelperWithData:jsonData parameters:parameters socket:self.webSocket host:BCH_API_HOST];
     
-    if (self.webSocketSecondary.readyState == SR_OPEN) {
-        [self.webSocketSecondary send:[[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding]];
+    for (NSUInteger i = 0; i < self.webSocketTests.count; i++ ) {
+        [self postMotionUpdateHelperWithData:jsonData parameters:parameters socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i][0]];
+    }
+}
+
+- (void)postMotionUpdateHelperWithData:(NSData *)data parameters:(NSDictionary *)parameters socket:(SRWebSocket *)socket host:(NSString *)host
+{
+    if (socket.readyState == SR_OPEN) {
+        [socket send:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
     }
     else {
-        AFHTTPRequestOperation *operationSecondary = [manager POST:[BCH_API_HOST_SECONDARY stringByAppendingString:BCH_API_PATH_HTTP] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [self.httpManager POST:[host stringByAppendingString:BCH_API_PATH_HTTP] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             //        NSLog(@"\nError: %@", error);
         }];
@@ -102,41 +104,36 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 - (void)postScreencastImageData:(NSData *)data
 {
-    // Form the URL request
-    if (self.webSocket.readyState == SR_OPEN) {
-        [self.webSocket send:data];
+//    [self postScreencastImageDataHelper:data socket:self.webSocket host:BCH_API_HOST];
+
+    for (NSUInteger i = 0; i < self.webSocketTests.count; i++ ) {
+        [self postScreencastImageDataHelper:data socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i][1]];
+    }
+}
+
+- (void)postScreencastImageDataHelper:(NSData *)data socket:(SRWebSocket *)socket host:(NSString *)host
+{
+    if (socket.readyState == SR_OPEN) {
+        [socket send:data];
     }
     else {
-        NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_IMAGE] parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:[host stringByAppendingString:BCH_API_PATH_IMAGE] parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
             [formData appendPartWithFileData:data name:@"image" fileName:@"original.jpg" mimeType:@"image/jpeg"];
         } error:nil];
         
         AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
         [self.httpManager.operationQueue addOperation:operation];
     }
-    
-    
-    if (self.webSocketSecondary.readyState == SR_OPEN) {
-        [self.webSocketSecondary send:data];
-    }
-    else {
-        NSMutableURLRequest *secondRequest = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:[BCH_API_HOST_SECONDARY stringByAppendingString:BCH_API_PATH_IMAGE] parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-            [formData appendPartWithFileData:data name:@"image" fileName:@"original.jpg" mimeType:@"image/jpeg"];
-        } error:nil];
-        
-        // Add the operations
-        AFHTTPRequestOperation *operationSecondary = [[AFHTTPRequestOperation alloc] initWithRequest:secondRequest];
-        [self.httpManager.operationQueue addOperation:operationSecondary];
-    }
 }
 
 - (void)attemptReconnection: (SRWebSocket *)webSocket
 {
-    if (!self.webSocket) {
-        self.webSocket = [self createWebSocket:BCH_API_HOST_SOCKET];
-    }
-    if (!self.webSocketSecondary) {
-        self.webSocketSecondary = [self createWebSocket:BCH_API_HOST_SOCKET];
+//    if (!self.webSocket) {
+//        self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
+//    }
+    NSInteger idx = [self.webSocketTests indexOfObject:webSocket];
+    if (idx >= 0 && idx < self.webSocketTests.count) {
+        [self.webSocketTests replaceObjectAtIndex:idx withObject:[self createWebSocket:[webSocket.url absoluteString]]];
     }
 }
 
