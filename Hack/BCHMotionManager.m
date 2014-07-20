@@ -10,12 +10,13 @@
 #import <AFNetworking/AFNetworking.h>
 
 static NSString *const BCH_API_URL = @"http://df49858.ngrok.com/update";
-static NSString *const BCH_API_SECONDARY_URL = @"http://2d3b9eaf.ngrok.com/update";
+static NSString *const BCH_API_SECONDARY_URL = @"http://d2e05a5.ngrok.com/update";
 
 typedef struct MotionData {
-    double roll;
-    double pitch;
-    double yaw;
+    double x;
+    double y;
+    double z;
+    double w;
     double rotX;
     double rotY;
     double rotZ;
@@ -66,7 +67,7 @@ typedef struct MotionData {
         // default: 0.2 (seconds)
 //        self.motionManager.gyroUpdateInterval;
         // default: 0.01 (seconds)
-        self.motionManager.deviceMotionUpdateInterval = 0.2;
+        self.motionManager.deviceMotionUpdateInterval = 0.05;
         // default: 0.025 (seconds)
 //        self.motionManager.magnetometerUpdateInterval;
 
@@ -116,6 +117,7 @@ typedef struct MotionData {
 - (void)handleDeviceMotionData:(CMDeviceMotion *)data
 {
     MotionData params;
+    NSMutableDictionary *otherParams = [NSMutableDictionary dictionary];
     
     CMAttitude *attitude = data.attitude;
     CMRotationRate rotationRate = data.rotationRate;
@@ -123,13 +125,15 @@ typedef struct MotionData {
 
     CMAcceleration gravityAccelerationVector = data.gravity;
     CMMagneticField calibratedMagneticField = data.magneticField.field;
+    
+    // default is CMAttitudeReferenceFrameXArbitraryZVertical
+//    self.motionManager.attitudeReferenceFrame;
 
-    double roll = attitude.roll;
-    double pitch = attitude.pitch;
-    double yaw = attitude.yaw;
-    params.roll = roll;
-    params.pitch = pitch;
-    params.yaw = yaw;
+    CMQuaternion quaternion = attitude.quaternion;
+    params.x = quaternion.x;
+    params.y = quaternion.y;
+    params.z = quaternion.z;
+    params.w = quaternion.w;
     
     /*
      This property yields a measurement of the device’s rate of rotation around three axes.
@@ -157,7 +161,7 @@ typedef struct MotionData {
     params.accelY = accelY;
     params.accelZ = accelZ;
     
-    [self postUpdate:params];
+    [self postUpdate:params otherParams:otherParams];
 }
 
 - (void)debugDeviceMotionData:(CMDeviceMotion *)data
@@ -165,11 +169,10 @@ typedef struct MotionData {
     
 }
 
-- (void)postUpdate:(MotionData)data
+- (void)postUpdate:(MotionData)data otherParams:(NSDictionary *)otherParams
 {
-    NSLog(@"\nroll: %f \npitch: %f\nyaw: %f \n", data.roll, data.pitch, data.yaw);
-    NSLog(@"\nrotX: %f \nrotY: %f\nrotZ: %f \n", data.rotX, data.rotY, data.rotZ);
-    NSLog(@"\naccelX: %f \naccelY: %f\naccelZ: %f \n", data.accelX, data.accelY, data.accelZ);
+//    NSLog(@"\nrotX: %f \nrotY: %f\nrotZ: %f \n", data.rotX, data.rotY, data.rotZ);
+//    NSLog(@"\naccelX: %f \naccelY: %f\naccelZ: %f \n", data.accelX, data.accelY, data.accelZ);
     static AFHTTPRequestOperationManager *manager;
     if (!manager) {
         manager = [AFHTTPRequestOperationManager manager];
@@ -178,20 +181,16 @@ typedef struct MotionData {
     // default is form-encoded request, change to use JSON
     manager.requestSerializer = [AFJSONRequestSerializer serializer];
     NSDictionary *parameters = @{
-                                     @"roll": @(data.roll),
-                                     @"pitch": @(data.pitch),
-                                     @"yaw": @(data.yaw),
                                      @"rotationRateX": @(data.rotX),
                                      @"rotationRateY": @(data.rotY),
-                                     @"rotationRateZ": @(data.rotZ)
+                                     @"rotationRateZ": @(data.rotZ),
+                                     @"quaternion":@[@(data.x), @(data.y), @(data.z), @(data.w)]
                                  };
     AFHTTPRequestOperation *operation = [manager POST:BCH_API_URL parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"\nJSON: %@", responseObject);
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"\nError: %@", error);
     }];
     AFHTTPRequestOperation *operationSecondary = [manager POST:BCH_API_SECONDARY_URL parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"\nJSON: %@", responseObject);
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"\nError: %@", error);
     }];
