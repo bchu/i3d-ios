@@ -9,6 +9,7 @@
 #import <SocketRocket/SRWebSocket.h>
 #import <AFNetworking/AFNetworking.h>
 #import "BCHDataManager.h"
+@import WebKit;
 
 static NSString *const BCH_API_HOST = @"http://example.com";
 static NSArray *BCH_API_HOST_TESTS;
@@ -20,7 +21,7 @@ static NSString *const BCH_API_PATH_SOCKET = @"/socket";
 static NSString *const BCH_API_PATH_IMAGE = @"/screencast";
 static NSString *const BCH_API_PATH_HTTP = @"/update";
 
-@interface BCHDataManager () <SRWebSocketDelegate>
+@interface BCHDataManager () <SRWebSocketDelegate, WKScriptMessageHandler>
 @end
 
 @implementation BCHDataManager
@@ -29,7 +30,7 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 {
     // format is http, ws
     BCH_API_HOST_TESTS = @[
-                           @[@"http://ngrok.com:54126", @"http://ngrok.com:39635"]
+                           @[@"http://ngrok.com:53961", @"http://ngrok.com:53789"]
                            ];
 }
 
@@ -58,8 +59,18 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
         }
         self.httpManager = [AFHTTPRequestOperationManager manager];
         self.httpManager.requestSerializer = [AFJSONRequestSerializer serializer];
+        
+        [self setupWebView];
     }
     return self;
+}
+
+- (void)setupWebView
+{
+    WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
+    config.userContentController = [[WKUserContentController alloc] init];
+    [config.userContentController addScriptMessageHandler:self name:@"sockets"];
+    WKWebView *webview = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, 0, 0) configuration:config];
 }
 
 - (SRWebSocket *)createWebSocket:(NSString *)url
