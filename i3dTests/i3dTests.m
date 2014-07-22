@@ -1,19 +1,19 @@
 //
-//  HackTests.m
-//  HackTests
+//  i3dTests.m
+//  i3dTests
 //
-//  Created by Brian Chu on 7/19/14.
+//  Created by Brian Chu on 7/22/14.
 //  Copyright (c) 2014 Brian. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-@interface HackTests : XCTestCase
+@interface i3dTests : XCTestCase
 
 @end
 
-@implementation HackTests
+@implementation i3dTests
 
 - (void)setUp {
     [super setUp];

@@ -1,8 +1,8 @@
-    //
-//  main.m
-//  Hack
 //
-//  Created by Brian Chu on 7/19/14.
+//  main.m
+//  i3d
+//
+//  Created by Brian Chu on 7/22/14.
 //  Copyright (c) 2014 Brian. All rights reserved.
 //
 
