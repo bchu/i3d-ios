@@ -47,9 +47,12 @@
         [BCHDataManager sharedInstance];
 
         self.motionManager = [[CMMotionManager alloc] init];
-        NSOperationQueue *motionQueue = [[NSOperationQueue alloc] init];
+        self.motionQueue = [[NSOperationQueue alloc] init];
         
-
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationForeground:) name:UIApplicationDidBecomeActiveNotification object:nil];
+        [self applicationForeground:nil];
+        
         // default: 0.2 (seconds)
 //        self.motionManager.accelerometerUpdateInterval;
         // default: 0.2 (seconds)
@@ -59,17 +62,27 @@
         // default: 0.025 (seconds)
 //        self.motionManager.magnetometerUpdateInterval;
 
-        // default is CMAttitudeReferenceFrameXArbitraryZVertical
-        [self.motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
-                                                                toQueue:motionQueue
-                                                            withHandler:^(CMDeviceMotion *motion, NSError *error) {
-            if(error){
-                NSLog(@"gyro error: %@", error);
-            }
-            [self handleDeviceMotionData:motion];
-        }];
+
     }
     return self;
+}
+
+- (void)applicationBackground:(NSNotification *)notification
+{
+    [self.motionManager stopDeviceMotionUpdates];
+}
+
+- (void)applicationForeground:(NSNotification *)notification
+{
+    // default is CMAttitudeReferenceFrameXArbitraryZVertical
+    [self.motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryCorrectedZVertical
+                                                            toQueue:self.motionQueue
+                                                        withHandler:^(CMDeviceMotion *motion, NSError *error) {
+                                                            if(error){
+                                                                NSLog(@"gyro error: %@", error);
+                                                            }
+                                                            [self handleDeviceMotionData:motion];
+                                                        }];
 }
 
 - (void)handleDeviceMotionData:(CMDeviceMotion *)data

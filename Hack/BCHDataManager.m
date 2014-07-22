@@ -14,9 +14,6 @@
 static NSString *const BCH_API_HOST = @"http://example.com";
 static NSArray *BCH_API_HOST_TESTS;
 
-static NSString *const BCH_HTTP = @"http://";
-static NSString *const BCH_WS = @"ws://";
-
 static NSString *const BCH_API_PATH_SOCKET = @"/socket";
 static NSString *const BCH_API_PATH_IMAGE = @"/screencast";
 static NSString *const BCH_API_PATH_HTTP = @"/update";
@@ -28,9 +25,8 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 + (void)initialize
 {
-    // format is http, ws
     BCH_API_HOST_TESTS = @[
-                           @[@"http://ngrok.com:53961", @"http://ngrok.com:53789"]
+                           @"http://sdgflsdflg.ngrok.com"
                            ];
 }
 
@@ -52,26 +48,19 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
                                                  selector:@selector(applicationDidBecomeActive:)
                                                      name:UIApplicationDidBecomeActiveNotification object:nil];
 
+
 //        self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
         self.webSocketTests = [NSMutableArray array];
-        for (NSArray *testHost in BCH_API_HOST_TESTS) {
-            [self.webSocketTests addObject:[self createWebSocket:[testHost[1] stringByAppendingString:BCH_API_PATH_SOCKET]]];
+        for (NSString *testHost in BCH_API_HOST_TESTS) {
+            [self.webSocketTests addObject:[self createWebSocket:[testHost stringByAppendingString:BCH_API_PATH_SOCKET]]];
         }
         self.httpManager = [AFHTTPRequestOperationManager manager];
         self.httpManager.requestSerializer = [AFJSONRequestSerializer serializer];
-        
-        [self setupWebView];
     }
     return self;
 }
 
-- (void)setupWebView
-{
-    WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
-    config.userContentController = [[WKUserContentController alloc] init];
-    [config.userContentController addScriptMessageHandler:self name:@"sockets"];
-    WKWebView *webview = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, 0, 0) configuration:config];
-}
+
 
 - (SRWebSocket *)createWebSocket:(NSString *)url
 {
@@ -96,7 +85,7 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 //    [self postMotionUpdateHelperWithData:jsonData parameters:parameters socket:self.webSocket host:BCH_API_HOST];
     
     for (NSUInteger i = 0; i < self.webSocketTests.count; i++ ) {
-        [self postMotionUpdateHelperWithData:jsonData parameters:parameters socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i][0]];
+        [self postMotionUpdateHelperWithData:jsonData parameters:parameters socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i]];
     }
 }
 
@@ -118,7 +107,7 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 //    [self postScreencastImageDataHelper:data socket:self.webSocket host:BCH_API_HOST];
 
     for (NSUInteger i = 0; i < self.webSocketTests.count; i++ ) {
-        [self postScreencastImageDataHelper:data socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i][1]];
+//        [self postScreencastImageDataHelper:data socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i]];
     }
 }
 
@@ -139,13 +128,17 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 - (void)attemptReconnection: (SRWebSocket *)webSocket
 {
-//    if (!self.webSocket) {
-//        self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
-//    }
-    NSInteger idx = [self.webSocketTests indexOfObject:webSocket];
-    if (idx >= 0 && idx < self.webSocketTests.count) {
-        [self.webSocketTests replaceObjectAtIndex:idx withObject:[self createWebSocket:[webSocket.url absoluteString]]];
-    }
+    CGFloat seconds = 3;
+    dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * seconds);
+    dispatch_after(delay, dispatch_get_main_queue(), ^(void){
+        //    if (!self.webSocket) {
+        //        self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
+        //    }
+        NSInteger idx = [self.webSocketTests indexOfObject:webSocket];
+        if (idx >= 0 && idx < self.webSocketTests.count) {
+            [self.webSocketTests replaceObjectAtIndex:idx withObject:[self createWebSocket:[webSocket.url absoluteString]]];
+        }
+    });
 }
 
 - (void)applicationDidBecomeActive: (NSNotification *)notification

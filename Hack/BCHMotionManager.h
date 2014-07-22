@@ -33,5 +33,6 @@ typedef struct MotionData {
 @property (weak, nonatomic) SRWebSocket *webSocket;
 @property (weak, nonatomic) SRWebSocket *webSocketSecondary;
 @property (strong, nonatomic) AFHTTPRequestOperationManager *httpManager;
+@property (strong, nonatomic) NSOperationQueue *motionQueue;
 + (instancetype)sharedInstance;
 @end
