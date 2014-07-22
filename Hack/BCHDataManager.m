@@ -11,7 +11,7 @@
 #import "BCHDataManager.h"
 @import WebKit;
 
-static NSString *const BCH_API_HOST = @"http://example.com";
+static NSString *const BCH_API_HOST = @"http://i3d.herokuapp.com";
 static NSArray *BCH_API_HOST_TESTS;
 
 static NSString *const BCH_API_PATH_SOCKET = @"/socket";
@@ -26,7 +26,7 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 + (void)initialize
 {
     BCH_API_HOST_TESTS = @[
-                           @"http://sdgflsdflg.ngrok.com"
+//                           @"http://sdgflsdflg.ngrok.com"
                            ];
 }
 
@@ -49,7 +49,7 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
                                                      name:UIApplicationDidBecomeActiveNotification object:nil];
 
 
-//        self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
+        self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
         self.webSocketTests = [NSMutableArray array];
         for (NSString *testHost in BCH_API_HOST_TESTS) {
             [self.webSocketTests addObject:[self createWebSocket:[testHost stringByAppendingString:BCH_API_PATH_SOCKET]]];
@@ -82,7 +82,7 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
                                  @"accelerationZ":@(data.accelZ)
                                  };
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
-//    [self postMotionUpdateHelperWithData:jsonData parameters:parameters socket:self.webSocket host:BCH_API_HOST];
+    [self postMotionUpdateHelperWithData:jsonData parameters:parameters socket:self.webSocket host:BCH_API_HOST];
     
     for (NSUInteger i = 0; i < self.webSocketTests.count; i++ ) {
         [self postMotionUpdateHelperWithData:jsonData parameters:parameters socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i]];
@@ -104,10 +104,10 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 - (void)postScreencastImageData:(NSData *)data
 {
-//    [self postScreencastImageDataHelper:data socket:self.webSocket host:BCH_API_HOST];
+    [self postScreencastImageDataHelper:data socket:self.webSocket host:BCH_API_HOST];
 
     for (NSUInteger i = 0; i < self.webSocketTests.count; i++ ) {
-//        [self postScreencastImageDataHelper:data socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i]];
+        [self postScreencastImageDataHelper:data socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i]];
     }
 }
 
@@ -131,9 +131,9 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
     CGFloat seconds = 3;
     dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * seconds);
     dispatch_after(delay, dispatch_get_main_queue(), ^(void){
-        //    if (!self.webSocket) {
-        //        self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
-        //    }
+        if (!self.webSocket) {
+            self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
+        }
         NSInteger idx = [self.webSocketTests indexOfObject:webSocket];
         if (idx >= 0 && idx < self.webSocketTests.count) {
             [self.webSocketTests replaceObjectAtIndex:idx withObject:[self createWebSocket:[webSocket.url absoluteString]]];
