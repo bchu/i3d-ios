@@ -19,6 +19,7 @@
 		D3A8DF08197E7768000E0551 /* MasterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DEFD197E7768000E0551 /* MasterViewController.m */; };
 		D3A8DF09197E7768000E0551 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DEFF197E7768000E0551 /* ViewController.m */; };
 		D3A8DF0B197E77CE000E0551 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D3A8DF0A197E77CE000E0551 /* Main.storyboard */; };
+		D3EDA81F1981178F00E76170 /* BCHScreenCaptureVideoView.m in Sources */ = {isa = PBXBuildFile; fileRef = D3EDA81E1981178F00E76170 /* BCHScreenCaptureVideoView.m */; };
 		F9CBEEC8B34341CDA0A4DD67 /* libPods-i3d.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FEAAA24D6247E1B7A03A6D /* libPods-i3d.a */; };
 /* End PBXBuildFile section */
 
@@ -57,6 +58,8 @@
 		D3A8DEFE197E7768000E0551 /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		D3A8DEFF197E7768000E0551 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		D3A8DF0A197E77CE000E0551 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		D3EDA81D1981178F00E76170 /* BCHScreenCaptureVideoView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BCHScreenCaptureVideoView.h; sourceTree = "<group>"; };
+		D3EDA81E1981178F00E76170 /* BCHScreenCaptureVideoView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BCHScreenCaptureVideoView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +129,8 @@
 				D3A8DEF4197E7768000E0551 /* BCHMotionManager.m */,
 				D3A8DEF5197E7768000E0551 /* BCHScreenCaptureView.h */,
 				D3A8DEF6197E7768000E0551 /* BCHScreenCaptureView.m */,
+				D3EDA81D1981178F00E76170 /* BCHScreenCaptureVideoView.h */,
+				D3EDA81E1981178F00E76170 /* BCHScreenCaptureVideoView.m */,
 				D3A8DEF7197E7768000E0551 /* DetailViewController.h */,
 				D3A8DEF8197E7768000E0551 /* DetailViewController.m */,
 				D3A8DEF9197E7768000E0551 /* Images.xcassets */,
@@ -290,6 +295,7 @@
 				D3A8DF01197E7768000E0551 /* BCHDataManager.m in Sources */,
 				D3A8DF07197E7768000E0551 /* main.m in Sources */,
 				D3A8DF02197E7768000E0551 /* BCHMotionManager.m in Sources */,
+				D3EDA81F1981178F00E76170 /* BCHScreenCaptureVideoView.m in Sources */,
 				D3A8DF08197E7768000E0551 /* MasterViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

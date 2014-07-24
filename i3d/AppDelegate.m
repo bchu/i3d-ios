@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import "BCHMotionManager.h"
 #import "BCHScreenCaptureView.h"
+#import "BCHScreenCaptureVideoView.h"
 #import "ViewController.h"
 
 @interface AppDelegate ()
@@ -20,7 +21,8 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     self.manager = [BCHMotionManager sharedInstance];
-    self.window = [[BCHScreenCaptureView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+//    self.window = [[BCHScreenCaptureView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    self.window = [[BCHScreenCaptureVideoView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     
     UIViewController *vc = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateInitialViewController];
     self.window.rootViewController = vc;
