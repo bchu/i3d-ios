@@ -7,7 +7,7 @@
 #import <AFNetworking/AFNetworking.h>
 #import <SocketRocket/SRWebSocket.h>
 
-@interface BCHScreenCaptureVideoView () <AVCaptureVideoDataOutputSampleBufferDelegate>
+@interface BCHScreenCaptureVideoView () <AVCaptureVideoDataOutputSampleBufferDelegate, SRWebSocketDelegate>
 @property (strong, nonatomic) NSArray *videoQueue;
 @property (strong, nonatomic) BCHVideoWriter *queuedWriter;
 @property (strong, nonatomic) BCHVideoWriter *currentWriter;
@@ -60,15 +60,22 @@
     [self.currentWriter setUpWriterWithSize:self.bounds.size url:[self tempFileURL]];
     [self.currentWriter startRecording];
 
-    self.webSocket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:self.url]];
-    self.webSocket.delegate = self;
-
+    self.webSocket = [self createWebSocket];
     // block is run synchronously
     self.resignObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
         [self stop];
         [self addActiveObserver];
     }];
     [self addActiveObserver];
+}
+
+- (SRWebSocket *)createWebSocket
+{
+    // webSocket retains itself on open:
+    SRWebSocket *socket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:self.url]];
+    socket.delegate = self;
+    [socket open];
+    return socket;
 }
 
 - (void)addActiveObserver
@@ -201,7 +208,7 @@
     dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * seconds);
     dispatch_after(delay, dispatch_get_main_queue(), ^(void){
         if (!self.webSocket) {
-//            self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
+            self.webSocket = [self createWebSocket];
         }
     });
 }

@@ -10,7 +10,7 @@
 #import <SocketRocket/SRWebSocket.h>
 @import AVFoundation;
 
-@interface BCHVideoWriter () <SRWebSocketDelegate>
+@interface BCHVideoWriter ()
 @property (nonatomic) void* bitmapData;
 
 @property (strong, nonatomic) NSURL *fileURL;
