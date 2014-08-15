@@ -48,6 +48,7 @@
 
         self.motionManager = [[CMMotionManager alloc] init];
         self.motionQueue = [[NSOperationQueue alloc] init];
+        self.motionQueue.qualityOfService = NSQualityOfServiceBackground;
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationForeground:) name:UIApplicationDidBecomeActiveNotification object:nil];

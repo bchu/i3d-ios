@@ -66,7 +66,7 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 {
     SRWebSocket *socket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:url]];
     socket.delegate = self;
-    [socket open];
+//    [socket open];
     return socket;
 }
 
@@ -148,7 +148,7 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error
 {
-//    NSLog(@"websocket failed: %@", error);
+    NSLog(@"websocket failed: %@", error);
     [self attemptReconnection:webSocket];
 }
 
