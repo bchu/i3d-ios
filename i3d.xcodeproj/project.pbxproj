@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D3A786861997299600ADDC9F /* BCHVideoWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A786851997299600ADDC9F /* BCHVideoWriter.m */; };
+		D3A786891998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A786881998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.m */; };
 		D3A8DED0197E7707000E0551 /* i3dTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DECF197E7707000E0551 /* i3dTests.m */; };
 		D3A8DF00197E7768000E0551 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DEF0197E7768000E0551 /* AppDelegate.m */; };
 		D3A8DF01197E7768000E0551 /* BCHDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DEF2197E7768000E0551 /* BCHDataManager.m */; };
@@ -36,6 +38,10 @@
 /* Begin PBXFileReference section */
 		0DF67DC470EC4B698C65E1E1 /* Pods-i3d.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-i3d.xcconfig"; path = "Pods/Pods-i3d.xcconfig"; sourceTree = "<group>"; };
 		95FEAAA24D6247E1B7A03A6D /* libPods-i3d.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-i3d.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3A786841997299600ADDC9F /* BCHVideoWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BCHVideoWriter.h; sourceTree = "<group>"; };
+		D3A786851997299600ADDC9F /* BCHVideoWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BCHVideoWriter.m; sourceTree = "<group>"; };
+		D3A786871998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BCHScreenCaptureVideoView+Deprecated.h"; sourceTree = "<group>"; };
+		D3A786881998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BCHScreenCaptureVideoView+Deprecated.m"; sourceTree = "<group>"; };
 		D3A8DEB0197E7707000E0551 /* i3d.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = i3d.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3A8DEC9197E7707000E0551 /* i3dTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = i3dTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3A8DECE197E7707000E0551 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -131,6 +137,10 @@
 				D3A8DEF6197E7768000E0551 /* BCHScreenCaptureView.m */,
 				D3EDA81D1981178F00E76170 /* BCHScreenCaptureVideoView.h */,
 				D3EDA81E1981178F00E76170 /* BCHScreenCaptureVideoView.m */,
+				D3A786871998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.h */,
+				D3A786881998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.m */,
+				D3A786841997299600ADDC9F /* BCHVideoWriter.h */,
+				D3A786851997299600ADDC9F /* BCHVideoWriter.m */,
 				D3A8DEF7197E7768000E0551 /* DetailViewController.h */,
 				D3A8DEF8197E7768000E0551 /* DetailViewController.m */,
 				D3A8DEF9197E7768000E0551 /* Images.xcassets */,
@@ -290,10 +300,12 @@
 			files = (
 				D3A8DF04197E7768000E0551 /* DetailViewController.m in Sources */,
 				D3A8DF00197E7768000E0551 /* AppDelegate.m in Sources */,
+				D3A786861997299600ADDC9F /* BCHVideoWriter.m in Sources */,
 				D3A8DF09197E7768000E0551 /* ViewController.m in Sources */,
 				D3A8DF03197E7768000E0551 /* BCHScreenCaptureView.m in Sources */,
 				D3A8DF01197E7768000E0551 /* BCHDataManager.m in Sources */,
 				D3A8DF07197E7768000E0551 /* main.m in Sources */,
+				D3A786891998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.m in Sources */,
 				D3A8DF02197E7768000E0551 /* BCHMotionManager.m in Sources */,
 				D3EDA81F1981178F00E76170 /* BCHScreenCaptureVideoView.m in Sources */,
 				D3A8DF08197E7768000E0551 /* MasterViewController.m in Sources */,

@@ -1,20 +1,3 @@
-//
-//ScreenCaptureView.h
-//
-#import <UIKit/UIKit.h>
-#import <AVFoundation/AVFoundation.h>
-
-/**
- * Delegate protocol.  Implement this if you want to receive a notification when the
- * view completes a recording.
- *
- * When a recording is completed, the ScreenCaptureView will notify the delegate, passing
- * it the path to the created recording file if the recording was successful, or a value
- * of nil if the recording failed/could not be saved.
- */
-@protocol ScreenCaptureViewDelegate <NSObject>
-- (void) recordingFinished:(NSString*)outputPathOrNil;
-@end
 
 /**
  * ScreenCaptureView, a UIView subclass that periodically samples its current display
@@ -37,6 +20,11 @@
  *  - CoreVideo
  *  - QuartzCore
  *
+ 
+ Credit to:
+ recording code: http://codethink.no-ip.org/wordpress/archives/673
+ streaming ideas: http://stackoverflow.com/questions/1960782/upload-live-streaming-video-from-iphone-like-ustream-or-qik
+ 
  */
 
 @import UIKit;
@@ -47,25 +35,11 @@
 @import AVFoundation;
 @import AssetsLibrary;
 
-@interface BCHScreenCaptureVideoView : UIWindow {
-    //video writing
-    AVAssetWriter *videoWriter;
-    AVAssetWriterInput *videoWriterInput;
-    AVAssetWriterInputPixelBufferAdaptor *avAdaptor;
-    
-    //recording state
-    BOOL _recording;
-    NSDate* startedAt;
-    void* bitmapData;
-}
-
-//for recording video
-- (bool) startRecording;
-- (void) stopRecording;
-
+@interface BCHScreenCaptureVideoView : UIWindow
 //for accessing the current screen and adjusting the capture rate, etc.
-@property(retain) UIImage* currentScreen;
 @property(assign) float frameRate;
-@property(nonatomic, assign) id<ScreenCaptureViewDelegate> delegate;
-
+@property (readonly, getter = isStarted, nonatomic) BOOL started;
+@property (strong, nonatomic) NSString *url;
+- (void)start;
+- (void)stop;
 @end
