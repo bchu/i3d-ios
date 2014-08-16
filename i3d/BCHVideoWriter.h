@@ -8,6 +8,7 @@
 
 @import UIKit;
 @import CoreMedia;
+@class SRWebSocket;
 //@class AVAssetWriter;
 //@class AVAssetWriterInput;
 //@class AVAssetWriterInputPixelBufferAdaptor;
@@ -33,6 +34,7 @@
 - (BOOL)setUpWriterWithSize:(CGSize)size url:(NSURL *)fileURL;
 - (void)startRecording;
 - (void)stopRecording;
+- (void)stopRecordingThenUploadWithSocket:(SRWebSocket *)socket;
 - (void)writeVideoFrameAtTime:(CMTime)time image:(UIImage *)image;
-- (void)upload;
+- (void)uploadWithSocket:(SRWebSocket *)socket;
 @end

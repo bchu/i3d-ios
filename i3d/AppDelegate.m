@@ -23,6 +23,7 @@
     self.manager = [BCHMotionManager sharedInstance];
 //    self.window = [[BCHScreenCaptureView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window = [[BCHScreenCaptureVideoView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    [(BCHScreenCaptureVideoView *)self.window start];
     
     UIViewController *vc = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateInitialViewController];
     self.window.rootViewController = vc;

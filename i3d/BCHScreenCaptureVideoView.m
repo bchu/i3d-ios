@@ -7,6 +7,8 @@
 #import <AFNetworking/AFNetworking.h>
 #import <SocketRocket/SRWebSocket.h>
 
+static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
+
 @interface BCHScreenCaptureVideoView () <AVCaptureVideoDataOutputSampleBufferDelegate, SRWebSocketDelegate>
 @property (strong, nonatomic) NSArray *videoQueue;
 @property (strong, nonatomic) BCHVideoWriter *queuedWriter;
@@ -29,12 +31,10 @@
     self.clearsContextBeforeDrawing = YES;
     // default: 10 fps
     self.frameRate = 10.0f;
-
-    self.queuedWriter = [[BCHVideoWriter alloc] init];
     self.currentWriter = [[BCHVideoWriter alloc] init];
 
     // default:
-    self.url = @"";
+    self.url = BCH_API_URL;
 }
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
@@ -64,9 +64,17 @@
     // block is run synchronously
     self.resignObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
         [self stop];
+        // only listen to UIApplicationDidBecomeActiveNotification if you previously resigned and stopped:
         [self addActiveObserver];
     }];
-    [self addActiveObserver];
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        self.queuedWriter = [[BCHVideoWriter alloc] init];
+        [self.queuedWriter setUpWriterWithSize:self.bounds.size url:[self tempFileURL]];
+    });
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self nextTick];
+    });
 }
 
 - (SRWebSocket *)createWebSocket
@@ -101,34 +109,42 @@
     self.started = NO;
     [self deregisterListeners];
 
-    [self.currentWriter stopRecording];
+    BCHVideoWriter *currentWriter = self.currentWriter;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [currentWriter stopRecordingThenUploadWithSocket:self.webSocket];
+    });
 
     // do some checks on whether upload has finished, and if it hasn't, create some sort of upload queue
     self.uploadingWriter = self.currentWriter;
     self.currentWriter = self.queuedWriter;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        self.queuedWriter = [[BCHVideoWriter alloc] init];
-        [self.queuedWriter setUpWriterWithSize:self.bounds.size url:[self tempFileURL]];
-    });
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self.uploadingWriter upload];
-    });
+}
+
+- (void)nextTick
+{
+    if (self.isStarted) {
+        NSLog(@"shiftWriters");
+        [self shiftWriters];
+    }
 }
 
 - (void)shiftWriters
 {
-    [self.queuedWriter startRecording];
-    [self.currentWriter stopRecording];
-
+    BCHVideoWriter *uploadingWriter = self.currentWriter;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [uploadingWriter stopRecordingThenUploadWithSocket:self.webSocket];
+    });
     // do some checks on whether upload has finished, and if it hasn't, create some sort of upload queue
-    self.uploadingWriter = self.currentWriter;
+    self.uploadingWriter = uploadingWriter;
+
     self.currentWriter = self.queuedWriter;
+    [self.currentWriter startRecording];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         self.queuedWriter = [[BCHVideoWriter alloc] init];
         [self.queuedWriter setUpWriterWithSize:self.bounds.size url:[self tempFileURL]];
     });
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self.uploadingWriter upload];
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self nextTick];
     });
 }
 
@@ -142,7 +158,6 @@
     static NSUInteger count;
     NSString *name = [NSString stringWithFormat:@"BCHTempVideo-%lu.mp4", count++];
     NSString* outputPath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject] stringByAppendingPathComponent:name];
-    NSLog(@"%@", outputPath);
     NSURL* outputURL = [[NSURL alloc] initFileURLWithPath:outputPath];
     NSFileManager* fileManager = [NSFileManager defaultManager];
     if ([fileManager fileExistsAtPath:outputPath]) {
@@ -202,7 +217,7 @@
 
 #pragma mark - Socket handling
 
-- (void)attemptReconnection: (SRWebSocket *)webSocket
+- (void)attemptReconnection
 {
     CGFloat seconds = 3;
     dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * seconds);
@@ -215,12 +230,13 @@
 
 - (void)applicationDidBecomeActive: (NSNotification *)notification
 {
-    [self attemptReconnection:nil];
+    [self attemptReconnection];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error
 {
-    [self attemptReconnection:webSocket];
+    NSLog(@"socket failed: %@", error);
+    [self attemptReconnection];
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket

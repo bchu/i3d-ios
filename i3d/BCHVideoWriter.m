@@ -135,11 +135,20 @@
         return;
     }
     self.recording = false;
-    [self completeRecording];
+    [self completeRecordingThenUploadWithSocket:nil];
+}
+
+- (void)stopRecordingThenUploadWithSocket:(SRWebSocket *)socket
+{
+    if (!self.recording) {
+        return;
+    }
+    self.recording = false;
+    [self completeRecordingThenUploadWithSocket:socket];
 }
 
 
-- (void)completeRecording
+- (void)completeRecordingThenUploadWithSocket:(SRWebSocket *)socket
 {
     @autoreleasepool {
         [self.videoWriterInput markAsFinished];
@@ -160,19 +169,20 @@
                 [self cleanupWriter];
                 
                 id delegateObj = self.delegate;
-                NSString *outputPath = [[NSString alloc] initWithFormat:@"%@/%@", [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0], @"output.mp4"];
-                NSURL *outputURL = [[NSURL alloc] initFileURLWithPath:outputPath];
-                
-                NSLog(@"Completed recording, file is stored at:  %@", outputURL);
+                NSLog(@"Completed recording, file is stored at:  %@", self.fileURL);
                 if ([delegateObj respondsToSelector:@selector(recordingFinished:)]) {
-                    [delegateObj performSelectorOnMainThread:@selector(recordingFinished:) withObject:outputURL waitUntilDone:YES];
+                    [delegateObj performSelectorOnMainThread:@selector(recordingFinished:) withObject:self.fileURL waitUntilDone:YES];
+                }
+
+                if (socket) {
+                    [self uploadWithSocket:socket];
                 }
             }
         }];
     }
 }
 
-#pragma mark - Upload;
+#pragma mark - Upload and Cleanup
 
 - (void)uploadWithSocket:(SRWebSocket *)socket
 {
