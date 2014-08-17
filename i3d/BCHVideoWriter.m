@@ -84,11 +84,11 @@
     }
     else {
         @synchronized (self) {
-            UIImage* newFrame = image;
             CVPixelBufferRef pixelBuffer = NULL;
-            CGImageRef cgImage = CGImageCreateCopy([newFrame CGImage]);
+            CGImageRef cgImage = CGImageCreateCopy(image.CGImage);
             CFDataRef image = CGDataProviderCopyData(CGImageGetDataProvider(cgImage));
-            
+
+            // ideally re-use pixel buffer here:
             int status = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, self.avAdaptor.pixelBufferPool, &pixelBuffer);
             if(status != 0){
                 //could not get a buffer from the pool
@@ -98,7 +98,7 @@
             CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
             uint8_t* destPixels = CVPixelBufferGetBaseAddress(pixelBuffer);
             CFDataGetBytes(image, CFRangeMake(0, CFDataGetLength(image)), destPixels);  //XXX:  will work if the pixel buffer is contiguous and has the same bytesPerRow as the input data
-            
+
             // BRIAN NOTE: alternate (broken) method:
             //            pixelBuffer = [self pixelBufferFromCGImage:newFrame.CGImage];
             //            int status = 1;
@@ -186,6 +186,12 @@
 
 - (void)uploadWithSocket:(SRWebSocket *)socket
 {
+    if (socket.readyState != SR_OPEN) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [self uploadWithSocket:socket];
+        });
+        return;
+    }
     NSError *error;
     NSData *data = [NSData dataWithContentsOfURL:self.fileURL options:NSDataReadingUncached error:&error];
     if (error) {

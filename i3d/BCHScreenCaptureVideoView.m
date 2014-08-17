@@ -8,6 +8,8 @@
 #import <SocketRocket/SRWebSocket.h>
 
 static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
+static NSUInteger BCH_TICK_SECONDS = 1.5;
+static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 
 @interface BCHScreenCaptureVideoView () <AVCaptureVideoDataOutputSampleBufferDelegate, SRWebSocketDelegate>
 @property (strong, nonatomic) NSArray *videoQueue;
@@ -29,8 +31,7 @@ static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
 {
     // Initialization code
     self.clearsContextBeforeDrawing = YES;
-    // default: 10 fps
-    self.frameRate = 10.0f;
+    self.frameRate = BCH_DEFAULT_FRAME_RATE;
     self.currentWriter = [[BCHVideoWriter alloc] init];
 
     // default:
@@ -72,9 +73,14 @@ static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
         self.queuedWriter = [[BCHVideoWriter alloc] init];
         [self.queuedWriter setUpWriterWithSize:self.bounds.size url:[self tempFileURL]];
     });
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(BCH_TICK_SECONDS * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self nextTick];
     });
+}
+
+- (void)webSocketDidOpen:(SRWebSocket *)webSocket
+{
+    NSLog(@"opened socket: %@", webSocket);
 }
 
 - (SRWebSocket *)createWebSocket
@@ -143,7 +149,7 @@ static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
         [self.queuedWriter setUpWriterWithSize:self.bounds.size url:[self tempFileURL]];
     });
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(BCH_TICK_SECONDS * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self nextTick];
     });
 }
@@ -171,6 +177,53 @@ static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
 
 #pragma mark - Recording frames
 
+- (void) drawRect:(CGRect)rect {
+    [self captureRun];
+
+    //    [self performSelectorInBackground:@selector(setNeedsDisplay) withObject:self];
+}
+
+//UIView *snap;
+- (void)captureRun
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSDate* start = [NSDate date];
+        CGSize imageSize = self.bounds.size;
+        UIGraphicsBeginImageContextWithOptions(imageSize, YES, 1);
+        //        CGContextRef context = UIGraphicsGetCurrentContext();
+        [self drawViewHierarchyInRect:self.bounds afterScreenUpdates:NO];
+        //        UIView *snap = [self snapshotViewAfterScreenUpdates:NO];
+        //        if (!snap) {
+        //            snap = [self snapshotViewAfterScreenUpdates:NO];
+        //        }
+        //        else {
+        //            snap = [snap snapshotViewAfterScreenUpdates:NO];
+        //        }
+        //        snap.layer.drawsAsynchronously = YES;
+        //        [snap.layer renderInContext:context];
+
+        UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+
+        if (self.currentWriter.recording) {
+            float millisElapsed = [[NSDate date] timeIntervalSinceDate:self.currentWriter.startedAt] * 1000.0;
+            [self.currentWriter writeVideoFrameAtTime:CMTimeMake((int)millisElapsed, 1000) image:image];
+        }
+
+        CGFloat processingSeconds = [[NSDate date] timeIntervalSinceDate:start];
+        CGFloat delayRemaining = (1.0 / self.frameRate) - processingSeconds;
+
+        CGFloat delay = delayRemaining > 0.0 ? delayRemaining : 0.01;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self setNeedsDisplay];
+        });
+//        dispatch_async(dispatch_get_main_queue(),^{
+//            [self setNeedsDisplay];
+//        });
+    });
+}
+
+/*
 //static int frameCount = 0;            //debugging
 - (void) drawRect:(CGRect)rect {
     NSDate* start = [NSDate date];
@@ -214,6 +267,7 @@ static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
     //redraw at the specified framerate
     [self performSelector:@selector(setNeedsDisplay) withObject:nil afterDelay:delayRemaining > 0.0 ? delayRemaining : 0.01];
 }
+*/
 
 #pragma mark - Socket handling
 
@@ -237,11 +291,6 @@ static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
 {
     NSLog(@"socket failed: %@", error);
     [self attemptReconnection];
-}
-
-- (void)webSocketDidOpen:(SRWebSocket *)webSocket
-{
-    NSLog(@"opened socket: %@", webSocket);
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message

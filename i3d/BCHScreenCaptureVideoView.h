@@ -12,13 +12,7 @@
  * the recording output file after each session.
  *
  * To use this class, you must link against the following frameworks:
- *
- *  - AssetsLibrary
  *  - AVFoundation
- *  - CoreGraphics
- *  - CoreMedia
- *  - CoreVideo
- *  - QuartzCore
  *
  
  Credit to:
@@ -28,16 +22,11 @@
  */
 
 @import UIKit;
-@import QuartzCore;
-@import CoreVideo;
-@import CoreMedia;
-@import CoreGraphics;
 @import AVFoundation;
-@import AssetsLibrary;
 
 @interface BCHScreenCaptureVideoView : UIWindow
 //for accessing the current screen and adjusting the capture rate, etc.
-@property(assign) float frameRate;
+@property (nonatomic) CGFloat frameRate;
 @property (readonly, getter = isStarted, nonatomic) BOOL started;
 @property (strong, nonatomic) NSString *url;
 - (void)start;
