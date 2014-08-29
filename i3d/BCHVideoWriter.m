@@ -167,7 +167,7 @@
             }
             else {
                 [self cleanupWriter];
-                
+
                 id delegateObj = self.delegate;
                 NSLog(@"Completed recording, file is stored at:  %@", self.fileURL);
                 if ([delegateObj respondsToSelector:@selector(recordingFinished:)]) {
@@ -175,7 +175,7 @@
                 }
 
                 if (socket) {
-                    [self uploadWithSocket:socket];
+                    [self uploadWithSocket:socket]; // responsible for HUGE CPU usage
                 }
             }
         }];
@@ -187,9 +187,10 @@
 - (void)uploadWithSocket:(SRWebSocket *)socket
 {
     if (socket.readyState != SR_OPEN) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            [self uploadWithSocket:socket];
-        });
+        // no connection to server, then just drop packet
+//        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//            [self uploadWithSocket:socket];
+//        });
         return;
     }
     NSError *error;

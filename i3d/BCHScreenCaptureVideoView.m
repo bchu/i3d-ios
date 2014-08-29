@@ -8,7 +8,7 @@
 #import <SocketRocket/SRWebSocket.h>
 
 static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
-static NSUInteger BCH_TICK_SECONDS = 1.5;
+static NSUInteger BCH_TICK_SECONDS = 2;
 static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 
 @interface BCHScreenCaptureVideoView () <AVCaptureVideoDataOutputSampleBufferDelegate, SRWebSocketDelegate>
@@ -137,7 +137,7 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 {
     BCHVideoWriter *uploadingWriter = self.currentWriter;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [uploadingWriter stopRecordingThenUploadWithSocket:self.webSocket];
+        [uploadingWriter stopRecordingThenUploadWithSocket:self.webSocket]; // responsible for HUGE amount of cpu usage
     });
     // do some checks on whether upload has finished, and if it hasn't, create some sort of upload queue
     self.uploadingWriter = uploadingWriter;
@@ -146,7 +146,8 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
     [self.currentWriter startRecording];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         self.queuedWriter = [[BCHVideoWriter alloc] init];
-        [self.queuedWriter setUpWriterWithSize:self.bounds.size url:[self tempFileURL]];
+        // TODO: recycle writers instead of re-setting them up
+        [self.queuedWriter setUpWriterWithSize:self.bounds.size url:[self tempFileURL]]; // responsible for large amount of memory usage
     });
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(BCH_TICK_SECONDS * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
