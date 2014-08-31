@@ -8,7 +8,7 @@
 #import <SocketRocket/SRWebSocket.h>
 
 static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
-static NSUInteger BCH_TICK_SECONDS = 2;
+static NSUInteger BCH_TICK_SECONDS = 1;
 static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 
 @interface BCHScreenCaptureVideoView () <AVCaptureVideoDataOutputSampleBufferDelegate, SRWebSocketDelegate>

@@ -9,16 +9,15 @@
 #import <SocketRocket/SRWebSocket.h>
 #import <AFNetworking/AFNetworking.h>
 #import "BCHDataManager.h"
-@import WebKit;
 
-static NSString *const BCH_API_HOST = @"http://i3d.herokuapp.com";
+static NSString *const BCH_API_HOST = @"http://sdgflsdflg.ngrok.com";//@"http://i3d.herokuapp.com";
 static NSArray *BCH_API_HOST_TESTS;
 
 static NSString *const BCH_API_PATH_SOCKET = @"/socket";
 static NSString *const BCH_API_PATH_IMAGE = @"/screencast";
 static NSString *const BCH_API_PATH_HTTP = @"/update";
 
-@interface BCHDataManager () <SRWebSocketDelegate, WKScriptMessageHandler>
+@interface BCHDataManager () <SRWebSocketDelegate>
 @end
 
 @implementation BCHDataManager
@@ -66,7 +65,7 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 {
     SRWebSocket *socket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:url]];
     socket.delegate = self;
-//    [socket open];
+    [socket open];
     return socket;
 }
 
