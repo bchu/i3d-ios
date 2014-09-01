@@ -8,12 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		D3A786861997299600ADDC9F /* BCHVideoWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A786851997299600ADDC9F /* BCHVideoWriter.m */; };
-		D3A786891998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A786881998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.m */; };
 		D3A8DED0197E7707000E0551 /* i3dTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DECF197E7707000E0551 /* i3dTests.m */; };
 		D3A8DF00197E7768000E0551 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DEF0197E7768000E0551 /* AppDelegate.m */; };
 		D3A8DF01197E7768000E0551 /* BCHDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DEF2197E7768000E0551 /* BCHDataManager.m */; };
 		D3A8DF02197E7768000E0551 /* BCHMotionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DEF4197E7768000E0551 /* BCHMotionManager.m */; };
-		D3A8DF03197E7768000E0551 /* BCHScreenCaptureView.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DEF6197E7768000E0551 /* BCHScreenCaptureView.m */; };
 		D3A8DF04197E7768000E0551 /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A8DEF8197E7768000E0551 /* DetailViewController.m */; };
 		D3A8DF05197E7768000E0551 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D3A8DEF9197E7768000E0551 /* Images.xcassets */; };
 		D3A8DF06197E7768000E0551 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D3A8DEFA197E7768000E0551 /* Info.plist */; };
@@ -39,8 +37,6 @@
 		95FEAAA24D6247E1B7A03A6D /* libPods-i3d.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-i3d.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3A786841997299600ADDC9F /* BCHVideoWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BCHVideoWriter.h; sourceTree = "<group>"; };
 		D3A786851997299600ADDC9F /* BCHVideoWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BCHVideoWriter.m; sourceTree = "<group>"; };
-		D3A786871998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BCHScreenCaptureVideoView+Deprecated.h"; sourceTree = "<group>"; };
-		D3A786881998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BCHScreenCaptureVideoView+Deprecated.m"; sourceTree = "<group>"; };
 		D3A8DEB0197E7707000E0551 /* i3d.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = i3d.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3A8DEC9197E7707000E0551 /* i3dTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = i3dTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3A8DECE197E7707000E0551 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -51,8 +47,6 @@
 		D3A8DEF2197E7768000E0551 /* BCHDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BCHDataManager.m; sourceTree = "<group>"; };
 		D3A8DEF3197E7768000E0551 /* BCHMotionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BCHMotionManager.h; sourceTree = "<group>"; };
 		D3A8DEF4197E7768000E0551 /* BCHMotionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BCHMotionManager.m; sourceTree = "<group>"; };
-		D3A8DEF5197E7768000E0551 /* BCHScreenCaptureView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BCHScreenCaptureView.h; sourceTree = "<group>"; };
-		D3A8DEF6197E7768000E0551 /* BCHScreenCaptureView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BCHScreenCaptureView.m; sourceTree = "<group>"; };
 		D3A8DEF7197E7768000E0551 /* DetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
 		D3A8DEF8197E7768000E0551 /* DetailViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
 		D3A8DEF9197E7768000E0551 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
@@ -130,19 +124,15 @@
 				D3A8DEF2197E7768000E0551 /* BCHDataManager.m */,
 				D3A8DEF3197E7768000E0551 /* BCHMotionManager.h */,
 				D3A8DEF4197E7768000E0551 /* BCHMotionManager.m */,
-				D3A8DEF5197E7768000E0551 /* BCHScreenCaptureView.h */,
-				D3A8DEF6197E7768000E0551 /* BCHScreenCaptureView.m */,
 				D3EDA81D1981178F00E76170 /* BCHScreenCaptureVideoView.h */,
 				D3EDA81E1981178F00E76170 /* BCHScreenCaptureVideoView.m */,
-				D3A786871998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.h */,
-				D3A786881998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.m */,
 				D3A786841997299600ADDC9F /* BCHVideoWriter.h */,
 				D3A786851997299600ADDC9F /* BCHVideoWriter.m */,
-				D3A8DEF7197E7768000E0551 /* DetailViewController.h */,
-				D3A8DEF8197E7768000E0551 /* DetailViewController.m */,
 				D3A8DEF9197E7768000E0551 /* Images.xcassets */,
 				D3A8DEFA197E7768000E0551 /* Info.plist */,
 				D3A8DEFB197E7768000E0551 /* main.m */,
+				D3A8DEF7197E7768000E0551 /* DetailViewController.h */,
+				D3A8DEF8197E7768000E0551 /* DetailViewController.m */,
 				D3A8DEFC197E7768000E0551 /* MasterViewController.h */,
 				D3A8DEFD197E7768000E0551 /* MasterViewController.m */,
 				D3A8DF0A197E77CE000E0551 /* Main.storyboard */,
@@ -296,10 +286,8 @@
 				D3A8DF04197E7768000E0551 /* DetailViewController.m in Sources */,
 				D3A8DF00197E7768000E0551 /* AppDelegate.m in Sources */,
 				D3A786861997299600ADDC9F /* BCHVideoWriter.m in Sources */,
-				D3A8DF03197E7768000E0551 /* BCHScreenCaptureView.m in Sources */,
 				D3A8DF01197E7768000E0551 /* BCHDataManager.m in Sources */,
 				D3A8DF07197E7768000E0551 /* main.m in Sources */,
-				D3A786891998767000ADDC9F /* BCHScreenCaptureVideoView+Deprecated.m in Sources */,
 				D3A8DF02197E7768000E0551 /* BCHMotionManager.m in Sources */,
 				D3EDA81F1981178F00E76170 /* BCHScreenCaptureVideoView.m in Sources */,
 				D3A8DF08197E7768000E0551 /* MasterViewController.m in Sources */,

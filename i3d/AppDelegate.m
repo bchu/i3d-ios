@@ -8,7 +8,6 @@
 
 #import "AppDelegate.h"
 #import "BCHMotionManager.h"
-#import "BCHScreenCaptureView.h"
 #import "BCHScreenCaptureVideoView.h"
 
 @interface AppDelegate ()
