@@ -78,21 +78,22 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
                                  @"accelerationY":@(data.accelY),
                                  @"accelerationZ":@(data.accelZ)
                                  };
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
-    [self postMotionUpdateHelperWithData:jsonData parameters:parameters socket:self.webSocket host:BCH_API_HOST];
+
+    [self postMotionUpdateHelperWithDictionary:parameters socket:self.webSocket host:BCH_API_HOST];
     
     for (NSUInteger i = 0; i < self.webSocketTests.count; i++ ) {
-        [self postMotionUpdateHelperWithData:jsonData parameters:parameters socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i]];
+        [self postMotionUpdateHelperWithDictionary:parameters socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i]];
     }
 }
 
-- (void)postMotionUpdateHelperWithData:(NSData *)data parameters:(NSDictionary *)parameters socket:(SRWebSocket *)socket host:(NSString *)host
+- (void)postMotionUpdateHelperWithDictionary:(NSDictionary *)dictionary socket:(SRWebSocket *)socket host:(NSString *)host
 {
     if (socket.readyState == SR_OPEN) {
-        [socket send:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
+        [socket send:[[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding]];
     }
     else {
-        [self.httpManager POST:[host stringByAppendingString:BCH_API_PATH_HTTP] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [self.httpManager POST:[host stringByAppendingString:BCH_API_PATH_HTTP] parameters:dictionary success:^(AFHTTPRequestOperation *operation, id responseObject) {
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         }];
     }
