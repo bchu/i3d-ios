@@ -11,12 +11,6 @@
 @import CoreMotion;
 
 @interface BCHMotionManager ()
-@property (nonatomic) double currentMaxAccelX;
-@property (nonatomic) double currentMaxAccelY;
-@property (nonatomic) double currentMaxAccelZ;
-@property (nonatomic) double currentMaxRotX;
-@property (nonatomic) double currentMaxRotY;
-@property (nonatomic) double currentMaxRotZ;
 @property (strong, nonatomic) CMMotionManager *motionManager;
 @end
 
@@ -36,14 +30,7 @@
 {
     self = [super init];
     if (self) {
-        self.currentMaxAccelX = 0;
-        self.currentMaxAccelY = 0;
-        self.currentMaxAccelZ = 0;
-        self.currentMaxRotX = 0;
-        self.currentMaxRotY = 0;
-        self.currentMaxRotZ = 0;
-        
-        // start connection:
+        // start connections:
         [BCHDataManager sharedInstance];
 
         self.motionManager = [[CMMotionManager alloc] init];
@@ -59,7 +46,9 @@
         // default: 0.2 (seconds)
 //        self.motionManager.gyroUpdateInterval;
         // default: 0.01 (seconds)
-        self.motionManager.deviceMotionUpdateInterval = 0.025;
+        // 0.016s is 60 fps
+        // 0.033 is 30 fps
+        self.motionManager.deviceMotionUpdateInterval = 0.033;
         // default: 0.025 (seconds)
 //        self.motionManager.magnetometerUpdateInterval;
 
@@ -95,8 +84,8 @@
     CMRotationRate rotationRate = data.rotationRate;
     CMAcceleration userAccelerationVector = data.userAcceleration;
 
-    CMAcceleration gravityAccelerationVector = data.gravity;
-    CMMagneticField calibratedMagneticField = data.magneticField.field;
+//    CMAcceleration gravityAccelerationVector = data.gravity;
+//    CMMagneticField calibratedMagneticField = data.magneticField.field;
 
     CMQuaternion quaternion = attitude.quaternion;
     params.x = quaternion.x;

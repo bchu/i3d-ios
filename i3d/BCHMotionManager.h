@@ -7,9 +7,6 @@
 //
 @import UIKit;
 
-@class SRWebSocket;
-@class AFHTTPRequestOperationManager;
-
 typedef struct MotionData {
     double x;
     double y;
@@ -23,16 +20,7 @@ typedef struct MotionData {
     double accelZ;
 } MotionData;
 
-@protocol BCHMotionManagerDelegate
-- (void)motionDataDidChange:(NSDictionary *)data;
-@end
-
 @interface BCHMotionManager : NSObject
-@property (strong, nonatomic) id<BCHMotionManagerDelegate> delegate;
-// SRWebSocket retains itself between open and close
-@property (weak, nonatomic) SRWebSocket *webSocket;
-@property (weak, nonatomic) SRWebSocket *webSocketSecondary;
-@property (strong, nonatomic) AFHTTPRequestOperationManager *httpManager;
 @property (strong, nonatomic) NSOperationQueue *motionQueue;
 + (instancetype)sharedInstance;
 @end
