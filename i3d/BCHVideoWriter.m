@@ -10,6 +10,8 @@
 #import "BCHDataManager.h"
 @import AVFoundation;
 
+NSString *BCHWritingDocumentsFileNames = @"BCHWritingDocumentsFileNames";
+
 @interface BCHVideoWriter ()
 @property (nonatomic) void* bitmapData;
 
@@ -48,9 +50,8 @@
                                    [NSNumber numberWithInt:size.height], AVVideoHeightKey,
                                    videoCompressionProps, AVVideoCompressionPropertiesKey,
                                    nil];
-    
+    // can't re-use this because it you cannot reset it after `markAsFinished`
     self.videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
-
     self.videoWriterInput.expectsMediaDataInRealTime = YES;
 
     // BRIAN NOTE: kCVPixelFormatType_32ARGB is used if createBitmapContextOfSize is used. Otherwise (UIGraphicsGetImageFromCurrentImageContext) use BGRA
@@ -73,7 +74,11 @@
 {
     self.startedAt = [NSDate date];
     self.recording = YES;
-    [self.videoWriter startWriting];
+    [self.videoWriter startWriting]; // this creates an empty file
+    NSArray *filenames = [[NSUserDefaults standardUserDefaults] objectForKey:BCHWritingDocumentsFileNames];
+    filenames = [filenames arrayByAddingObject:self.fileURL.path.lastPathComponent];
+    [[NSUserDefaults standardUserDefaults] setObject:filenames forKey:BCHWritingDocumentsFileNames];
+    [[NSUserDefaults standardUserDefaults] synchronize];
     [self.videoWriter startSessionAtSourceTime:CMTimeMake(0, 1000)];
 }
 
@@ -83,7 +88,7 @@
         NSLog(@"Not ready for video data");
     }
     else {
-        @synchronized (self) {
+//        @synchronized (self) {
             CVPixelBufferRef pixelBuffer = NULL;
             CGImageRef cgImage = CGImageCreateCopy(image.CGImage);
             CFDataRef image = CGDataProviderCopyData(CGImageGetDataProvider(cgImage));
@@ -123,8 +128,8 @@
             CVPixelBufferRelease( pixelBuffer );
             CFRelease(image);
             CGImageRelease(cgImage);
-        }
-        
+//        }
+
     }
     
 }
@@ -184,11 +189,16 @@
 
     // delete old file:
     NSFileManager* fileManager = [NSFileManager defaultManager];
-    NSString *path = self.fileURL.path;
-    if ([fileManager fileExistsAtPath:path]) {
+    if ([fileManager fileExistsAtPath:self.fileURL.path]) {
         NSError* error;
-        if ([fileManager removeItemAtPath:path error:&error] == NO) {
-            NSLog(@"Could not delete old recording file at path: %@, with error: %@", path, error);
+        if ([fileManager removeItemAtURL:self.fileURL error:&error] == NO) {
+            NSLog(@"Could not delete old recording file at path: %@, with error: %@", self.fileURL.path, error);
+        }
+        else {
+            NSMutableArray *filenames = [[[NSUserDefaults standardUserDefaults] objectForKey:BCHWritingDocumentsFileNames] mutableCopy];
+            [filenames removeObject:self.fileURL.path.lastPathComponent];
+            [[NSUserDefaults standardUserDefaults] setObject:filenames forKey:BCHWritingDocumentsFileNames];
+            [[NSUserDefaults standardUserDefaults] synchronize];
         }
     }
 }

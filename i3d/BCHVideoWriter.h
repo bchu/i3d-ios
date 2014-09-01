@@ -22,6 +22,8 @@
 - (void) recordingFinished:(NSString*)outputPathOrNil;
 @end
 
+extern NSString *BCHWritingDocumentsFileNames;
+
 @interface BCHVideoWriter : NSObject
 @property (nonatomic) BOOL recording;
 @property (strong, nonatomic) NSDate* startedAt;

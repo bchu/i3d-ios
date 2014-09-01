@@ -24,12 +24,26 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 
 @implementation BCHScreenCaptureVideoView
 
++ (void)initialize
+{
+    // tells NSUserDefaults what the factory defaults are, if a key doesn't exist. Does not get written to disk, so must call every time app runs
+    [[NSUserDefaults standardUserDefaults] registerDefaults:@{BCHWritingDocumentsFileNames: [NSMutableArray array]}];
+}
+
 - (void)initialize
 {
     // Initialization code
     self.clearsContextBeforeDrawing = YES;
     self.frameRate = BCH_DEFAULT_FRAME_RATE;
     self.currentWriter = [[BCHVideoWriter alloc] init];
+
+    NSArray *previousNames = [[NSUserDefaults standardUserDefaults] objectForKey:BCHWritingDocumentsFileNames];
+    for (NSString *filename in previousNames) {
+        NSError *error;
+        NSString *path = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:filename];
+        [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
+    }
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:BCHWritingDocumentsFileNames];
 }
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
