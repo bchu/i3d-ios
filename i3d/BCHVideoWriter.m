@@ -7,7 +7,7 @@
 //
 
 #import "BCHVideoWriter.h"
-#import <SocketRocket/SRWebSocket.h>
+#import "BCHDataManager.h"
 @import AVFoundation;
 
 @interface BCHVideoWriter ()
@@ -131,25 +131,16 @@
 
 - (void)stopRecording
 {
-    if (!self.recording) {
-        return;
-    }
-    self.recording = false;
-    [self completeRecordingThenUploadWithSocket:nil];
+    [self stopRecordingThenUploadWithManager:nil];
 }
 
-- (void)stopRecordingThenUploadWithSocket:(SRWebSocket *)socket
+- (void)stopRecordingThenUploadWithManager:(BCHDataManager *)dataManager;
 {
     if (!self.recording) {
         return;
     }
     self.recording = false;
-    [self completeRecordingThenUploadWithSocket:socket];
-}
 
-
-- (void)completeRecordingThenUploadWithSocket:(SRWebSocket *)socket
-{
     @autoreleasepool {
         [self.videoWriterInput markAsFinished];
         
@@ -173,10 +164,8 @@
                 if ([delegateObj respondsToSelector:@selector(recordingFinished:)]) {
                     [delegateObj performSelectorOnMainThread:@selector(recordingFinished:) withObject:self.fileURL waitUntilDone:YES];
                 }
-
-                if (socket) {
-                    [self uploadWithSocket:socket]; // responsible for HUGE CPU usage
-                }
+                if (!dataManager) { return; }
+                [self sendDataToManager:dataManager];
             }
         }];
     }
@@ -184,21 +173,14 @@
 
 #pragma mark - Upload and Cleanup
 
-- (void)uploadWithSocket:(SRWebSocket *)socket
+- (void)sendDataToManager:(BCHDataManager *)dataManager
 {
-    if (socket.readyState != SR_OPEN) {
-        // no connection to server, then just drop packet
-//        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//            [self uploadWithSocket:socket];
-//        });
-        return;
-    }
     NSError *error;
     NSData *data = [NSData dataWithContentsOfURL:self.fileURL options:NSDataReadingUncached error:&error];
     if (error) {
         NSLog(@"Upload data reading error: %@", error);
     }
-    [socket send:data];
+    [dataManager postScreencastVideoData:data];
 
     // delete old file:
     NSFileManager* fileManager = [NSFileManager defaultManager];

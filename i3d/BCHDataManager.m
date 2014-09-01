@@ -14,7 +14,7 @@ static NSString *const BCH_API_HOST = @"http://sdgflsdflg.ngrok.com";//@"http://
 static NSArray *BCH_API_HOST_TESTS;
 
 static NSString *const BCH_API_PATH_SOCKET = @"/socket";
-static NSString *const BCH_API_PATH_IMAGE = @"/screencast";
+static NSString *const BCH_API_PATH_VIDEO = @"/video";
 static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 @interface BCHDataManager () <SRWebSocketDelegate>
@@ -59,8 +59,6 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
     return self;
 }
 
-
-
 - (SRWebSocket *)createWebSocket:(NSString *)url
 {
     SRWebSocket *socket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:url]];
@@ -96,28 +94,27 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
     else {
         [self.httpManager POST:[host stringByAppendingString:BCH_API_PATH_HTTP] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            //        NSLog(@"\nError: %@", error);
         }];
     }
 }
 
-- (void)postScreencastImageData:(NSData *)data
+- (void)postScreencastVideoData:(NSData *)data
 {
-    [self postScreencastImageDataHelper:data socket:self.webSocket host:BCH_API_HOST];
+    [self postScreencastVideoDataHelper:data socket:self.webSocket host:BCH_API_HOST];
 
     for (NSUInteger i = 0; i < self.webSocketTests.count; i++ ) {
-        [self postScreencastImageDataHelper:data socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i]];
+        [self postScreencastVideoDataHelper:data socket:self.webSocketTests[i] host:BCH_API_HOST_TESTS[i]];
     }
 }
 
-- (void)postScreencastImageDataHelper:(NSData *)data socket:(SRWebSocket *)socket host:(NSString *)host
+- (void)postScreencastVideoDataHelper:(NSData *)data socket:(SRWebSocket *)socket host:(NSString *)host
 {
     if (socket.readyState == SR_OPEN) {
         [socket send:data];
     }
     else {
-        NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:[host stringByAppendingString:BCH_API_PATH_IMAGE] parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-            [formData appendPartWithFileData:data name:@"image" fileName:@"original.jpg" mimeType:@"image/jpeg"];
+        NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:[host stringByAppendingString:BCH_API_PATH_VIDEO] parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+            [formData appendPartWithFileData:data name:@"video" fileName:@"video.mp4" mimeType:@"video/mp4"];
         } error:nil];
         
         AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];

@@ -21,5 +21,5 @@
 + (instancetype)sharedInstance;
 - (void)attemptReconnection: (SRWebSocket *)webSocket;
 - (void)postMotionUpdate:(MotionData)data otherParams:(NSDictionary *)otherParams;
-- (void)postScreencastImageData:(NSData *)data;
+- (void)postScreencastVideoData:(NSData *)data;
 @end

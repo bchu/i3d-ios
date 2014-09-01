@@ -8,7 +8,7 @@
 
 @import UIKit;
 @import CoreMedia;
-@class SRWebSocket;
+@class BCHDataManager;
 
 /**
  * Delegate protocol.  Implement this if you want to receive a notification when the
@@ -31,7 +31,6 @@
 - (BOOL)setUpWriterWithSize:(CGSize)size url:(NSURL *)fileURL;
 - (void)startRecording;
 - (void)stopRecording;
-- (void)stopRecordingThenUploadWithSocket:(SRWebSocket *)socket;
+- (void)stopRecordingThenUploadWithManager:(BCHDataManager *)dataManager;
 - (void)writeVideoFrameAtTime:(CMTime)time image:(UIImage *)image;
-- (void)uploadWithSocket:(SRWebSocket *)socket;
 @end

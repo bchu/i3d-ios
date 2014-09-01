@@ -1,17 +1,14 @@
-//
-//ScreenCaptureView.m
-//
+
 #import "BCHScreenCaptureVideoView.h"
 #import "BCHVideoWriter.h"
+#import "BCHDataManager.h"
 
 #import <AFNetworking/AFNetworking.h>
-#import <SocketRocket/SRWebSocket.h>
 
-static NSString *BCH_API_URL = @"http://sdgflsdflg.ngrok.com/socket";
 static NSUInteger BCH_TICK_SECONDS = 1;
 static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 
-@interface BCHScreenCaptureVideoView () <AVCaptureVideoDataOutputSampleBufferDelegate, SRWebSocketDelegate>
+@interface BCHScreenCaptureVideoView () <AVCaptureVideoDataOutputSampleBufferDelegate>
 @property (strong, nonatomic) NSArray *videoQueue;
 @property (strong, nonatomic) BCHVideoWriter *queuedWriter;
 @property (strong, nonatomic) BCHVideoWriter *currentWriter;
@@ -20,7 +17,7 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 // readwrite redeclaration
 @property (readwrite, getter = isStarted, nonatomic) BOOL started;
 
-@property (weak, nonatomic) SRWebSocket *webSocket;
+@property (strong, nonatomic) BCHDataManager *dataManager;
 @property (strong, nonatomic) NSObject *resignObserver;
 @property (strong, nonatomic) NSObject *activeObserver;
 @end
@@ -33,9 +30,6 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
     self.clearsContextBeforeDrawing = YES;
     self.frameRate = BCH_DEFAULT_FRAME_RATE;
     self.currentWriter = [[BCHVideoWriter alloc] init];
-
-    // default:
-    self.url = BCH_API_URL;
 }
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
@@ -61,7 +55,7 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
     [self.currentWriter setUpWriterWithSize:self.bounds.size url:[self tempFileURL]];
     [self.currentWriter startRecording];
 
-    self.webSocket = [self createWebSocket];
+    self.dataManager = [BCHDataManager sharedInstance];
     // block is run synchronously
     self.resignObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
         [self stop];
@@ -76,20 +70,6 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(BCH_TICK_SECONDS * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self nextTick];
     });
-}
-
-- (void)webSocketDidOpen:(SRWebSocket *)webSocket
-{
-    NSLog(@"opened socket: %@", webSocket);
-}
-
-- (SRWebSocket *)createWebSocket
-{
-    // webSocket retains itself on open:
-    SRWebSocket *socket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:self.url]];
-    socket.delegate = self;
-    [socket open];
-    return socket;
 }
 
 - (void)addActiveObserver
@@ -117,7 +97,7 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 
     BCHVideoWriter *currentWriter = self.currentWriter;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [currentWriter stopRecordingThenUploadWithSocket:self.webSocket];
+        [currentWriter stopRecordingThenUploadWithManager:self.dataManager];
     });
 
     // do some checks on whether upload has finished, and if it hasn't, create some sort of upload queue
@@ -137,7 +117,7 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 {
     BCHVideoWriter *uploadingWriter = self.currentWriter;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [uploadingWriter stopRecordingThenUploadWithSocket:self.webSocket]; // responsible for HUGE amount of cpu usage
+        [uploadingWriter stopRecordingThenUploadWithManager:self.dataManager]; // responsible for HUGE amount of cpu usage
     });
     // do some checks on whether upload has finished, and if it hasn't, create some sort of upload queue
     self.uploadingWriter = uploadingWriter;
@@ -190,19 +170,9 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSDate* start = [NSDate date];
         CGSize imageSize = self.bounds.size;
+        // scale must be 1:
         UIGraphicsBeginImageContextWithOptions(imageSize, YES, 1);
-        //        CGContextRef context = UIGraphicsGetCurrentContext();
         [self drawViewHierarchyInRect:self.bounds afterScreenUpdates:NO];
-        //        UIView *snap = [self snapshotViewAfterScreenUpdates:NO];
-        //        if (!snap) {
-        //            snap = [self snapshotViewAfterScreenUpdates:NO];
-        //        }
-        //        else {
-        //            snap = [snap snapshotViewAfterScreenUpdates:NO];
-        //        }
-        //        snap.layer.drawsAsynchronously = YES;
-        //        [snap.layer renderInContext:context];
-
         UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
 
@@ -269,39 +239,5 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
     [self performSelector:@selector(setNeedsDisplay) withObject:nil afterDelay:delayRemaining > 0.0 ? delayRemaining : 0.01];
 }
 */
-
-#pragma mark - Socket handling
-
-- (void)attemptReconnection
-{
-    CGFloat seconds = 3;
-    dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * seconds);
-    dispatch_after(delay, dispatch_get_main_queue(), ^(void){
-        if (!self.webSocket) {
-            self.webSocket = [self createWebSocket];
-        }
-    });
-}
-
-- (void)applicationDidBecomeActive: (NSNotification *)notification
-{
-    [self attemptReconnection];
-}
-
-- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error
-{
-    NSLog(@"socket failed: %@", error);
-    [self attemptReconnection];
-}
-
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message
-{
-    NSLog(@"received");
-}
-
-- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean
-{
-    NSLog(@"closed: code:%li, reason:%@", (long)code, reason);
-}
 
 @end
