@@ -9,6 +9,5 @@
 #import "BCHScreenCaptureVideoView.h"
 
 @interface BCHScreenCaptureVideoView (Deprecated)
-- (CGContextRef) createBitmapContextOfSize:(CGSize) size;
 - (CVPixelBufferRef) pixelBufferFromCGImage: (CGImageRef) image;
 @end

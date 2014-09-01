@@ -10,44 +10,6 @@
 
 @implementation BCHScreenCaptureVideoView (Deprecated)
 
-- (CGContextRef) createBitmapContextOfSize:(CGSize) size {
-//    CGContextRef    context = NULL;
-//    CGColorSpaceRef colorSpace;
-//    int             bitmapByteCount;
-//    int             bitmapBytesPerRow;
-//    
-//    bitmapBytesPerRow   = (size.width * 4);
-//    bitmapByteCount     = (bitmapBytesPerRow * size.height);
-//    colorSpace = CGColorSpaceCreateDeviceRGB();
-//    if (self.bitmapData != NULL) {
-//        free(self.bitmapData);
-//    }
-//    self.bitmapData = malloc( bitmapByteCount );
-//    if (self.bitmapData == NULL) {
-//        fprintf (stderr, "Memory not allocated!");
-//        return NULL;
-//    }
-//    
-//    context = CGBitmapContextCreate (self.bitmapData,
-//                                     size.width,
-//                                     size.height,
-//                                     8,      // bits per component
-//                                     bitmapBytesPerRow,
-//                                     colorSpace,
-//                                     kCGImageAlphaNoneSkipFirst);
-//    
-//    CGContextSetAllowsAntialiasing(context,NO);
-//    if (context== NULL) {
-//        free (self.bitmapData);
-//        fprintf (stderr, "Context not created!");
-//        return NULL;
-//    }
-//    CGColorSpaceRelease( colorSpace );
-//    
-//    return context;
-    return NULL;
-}
-
 - (CVPixelBufferRef) pixelBufferFromCGImage: (CGImageRef) image
 {
     

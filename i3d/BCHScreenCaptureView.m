@@ -81,7 +81,7 @@
         UIGraphicsEndImageContext();
         
         NSData *data = UIImageJPEGRepresentation(image, 0.0);
-        [dataManager postScreencastImageData:data];
+//        [dataManager postScreencastImageData:data];
         dispatch_async(dispatch_get_main_queue(),^{
             [self setNeedsDisplay];
         });

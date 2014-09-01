@@ -10,7 +10,6 @@
 #import "BCHMotionManager.h"
 #import "BCHScreenCaptureView.h"
 #import "BCHScreenCaptureVideoView.h"
-#import "ViewController.h"
 
 @interface AppDelegate ()
 @property (strong, nonatomic) BCHMotionManager *manager;
@@ -21,15 +20,11 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     self.manager = [BCHMotionManager sharedInstance];
-//    self.window = [[BCHScreenCaptureView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window = [[BCHScreenCaptureVideoView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     [(BCHScreenCaptureVideoView *)self.window start];
     
     UIViewController *vc = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateInitialViewController];
     self.window.rootViewController = vc;
-//    ViewController *alt = [[ViewController alloc] init];
-//    alt.view.backgroundColor = [UIColor redColor];
-//    self.window.rootViewController = alt;
     [self.window makeKeyAndVisible];
     return YES;
 }
