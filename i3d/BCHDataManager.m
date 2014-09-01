@@ -127,10 +127,10 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 
 - (void)attemptReconnection: (SRWebSocket *)webSocket
 {
-    CGFloat seconds = 3;
+    CGFloat seconds = 2;
     dispatch_time_t delay = dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC * seconds);
     dispatch_after(delay, dispatch_get_main_queue(), ^(void){
-        if (!self.webSocket) {
+        if (!self.webSocket || self.webSocket.readyState == SR_CLOSING || self.webSocket.readyState == SR_CLOSED) {
             self.webSocket = [self createWebSocket:[BCH_API_HOST stringByAppendingString:BCH_API_PATH_SOCKET]];
         }
         NSInteger idx = [self.webSocketTests indexOfObject:webSocket];
@@ -164,5 +164,6 @@ static NSString *const BCH_API_PATH_HTTP = @"/update";
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean
 {
     NSLog(@"closed: code:%li, reason:%@", (long)code, reason);
+    [self attemptReconnection:webSocket];
 }
 @end
