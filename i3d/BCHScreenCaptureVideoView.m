@@ -174,11 +174,8 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 
 - (void) drawRect:(CGRect)rect {
     [self captureRun];
-
-    //    [self performSelectorInBackground:@selector(setNeedsDisplay) withObject:self];
 }
 
-//UIView *snap;
 - (void)captureRun
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -202,9 +199,6 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self setNeedsDisplay];
         });
-//        dispatch_async(dispatch_get_main_queue(),^{
-//            [self setNeedsDisplay];
-//        });
     });
 }
 

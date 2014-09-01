@@ -40,8 +40,9 @@ NSString *BCHWritingDocumentsFileNames = @"BCHWritingDocumentsFileNames";
     self.videoWriter = [[AVAssetWriter alloc] initWithURL:fileURL fileType:AVFileTypeQuickTimeMovie error:&error];
     
     //Configure video
+    // 500 kilobits:
     NSDictionary* videoCompressionProps = [NSDictionary dictionaryWithObjectsAndKeys:
-                                           [NSNumber numberWithDouble:1024.0*1024.0], AVVideoAverageBitRateKey,
+                                           @(500000), AVVideoAverageBitRateKey,
                                            nil ];
 
     NSDictionary* videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -156,7 +157,8 @@ NSString *BCHWritingDocumentsFileNames = @"BCHWritingDocumentsFileNames";
             [NSThread sleepForTimeInterval:0.5f];
             status = self.videoWriter.status;
         }
-        
+
+        // this actually writes data to file; before this is called, the file is empty
         [self.videoWriter finishWritingWithCompletionHandler:^{
             if (self.videoWriter.status != AVAssetWriterStatusCompleted) {
                 NSLog(@"finishWriting returned NO");
