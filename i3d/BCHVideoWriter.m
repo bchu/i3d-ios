@@ -85,6 +85,11 @@ NSString *BCHWritingDocumentsFileNames = @"BCHWritingDocumentsFileNames";
 
 - (void)writeVideoFrameAtTime:(CMTime)time image:(UIImage *)image
 {
+    [self writeVideoFrameAtTime:time image:image block:nil];
+}
+
+- (void)writeVideoFrameAtTime:(CMTime)time image:(UIImage *)image block:(void(^)(CVPixelBufferRef))block
+{
     if (![self.videoWriterInput isReadyForMoreMediaData]) {
         NSLog(@"Not ready for video data");
     }
@@ -92,7 +97,7 @@ NSString *BCHWritingDocumentsFileNames = @"BCHWritingDocumentsFileNames";
 //        @synchronized (self) {
             CVPixelBufferRef pixelBuffer = NULL;
             CGImageRef cgImage = CGImageCreateCopy(image.CGImage);
-            CFDataRef image = CGDataProviderCopyData(CGImageGetDataProvider(cgImage));
+            CFDataRef imageData = CGDataProviderCopyData(CGImageGetDataProvider(cgImage));
 
             // ideally re-use pixel buffer here:
             int status = CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, self.avAdaptor.pixelBufferPool, &pixelBuffer);
@@ -103,7 +108,7 @@ NSString *BCHWritingDocumentsFileNames = @"BCHWritingDocumentsFileNames";
             // set image data into pixel buffer
             CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
             uint8_t* destPixels = CVPixelBufferGetBaseAddress(pixelBuffer);
-            CFDataGetBytes(image, CFRangeMake(0, CFDataGetLength(image)), destPixels);  //XXX:  will work if the pixel buffer is contiguous and has the same bytesPerRow as the input data
+            CFDataGetBytes(imageData, CFRangeMake(0, CFDataGetLength(imageData)), destPixels);  //XXX:  will work if the pixel buffer is contiguous and has the same bytesPerRow as the input data
 
             // BRIAN NOTE: alternate (broken) method:
             //            pixelBuffer = [self pixelBufferFromCGImage:newFrame.CGImage];
@@ -116,6 +121,9 @@ NSString *BCHWritingDocumentsFileNames = @"BCHWritingDocumentsFileNames";
             //            int bytesPerPixel = r/w;
             //
             //            unsigned char *buffer = CVPixelBufferGetBaseAddress(pixelBuffer);
+        if (block) {
+            block(pixelBuffer);
+        }
             
             
             
@@ -127,7 +135,7 @@ NSString *BCHWritingDocumentsFileNames = @"BCHWritingDocumentsFileNames";
             //clean up
             CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
             CVPixelBufferRelease( pixelBuffer );
-            CFRelease(image);
+            CFRelease(imageData);
             CGImageRelease(cgImage);
 //        }
 

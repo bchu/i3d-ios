@@ -35,4 +35,5 @@ extern NSString *BCHWritingDocumentsFileNames;
 - (void)stopRecording;
 - (void)stopRecordingThenUploadWithManager:(BCHDataManager *)dataManager;
 - (void)writeVideoFrameAtTime:(CMTime)time image:(UIImage *)image;
+- (void)writeVideoFrameAtTime:(CMTime)time image:(UIImage *)image block:(void(^)(CVPixelBufferRef))block;
 @end

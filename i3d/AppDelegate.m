@@ -9,9 +9,11 @@
 #import "AppDelegate.h"
 #import "BCHMotionManager.h"
 #import "BCHScreenCaptureVideoView.h"
+//#import <videocore/videocore/api/iOS/VCSimpleSession.h>
 
 @interface AppDelegate ()
 @property (strong, nonatomic) BCHMotionManager *manager;
+//@property (strong, nonatomic) VCSimpleSession *session;
 @end
 
 @implementation AppDelegate
@@ -19,9 +21,13 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     self.manager = [BCHMotionManager sharedInstance];
-    self.window = [[BCHScreenCaptureVideoView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+//    self.window = [[BCHScreenCaptureVideoView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     [(BCHScreenCaptureVideoView *)self.window start];
-    
+    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+//    VCSimpleSession *session = [[VCSimpleSession alloc] initWithVideoSize:self.window.bounds.size frameRate:30 bitrate:1000000];
+//    self.session = session;
+//    [session startRtmpSessionWithURL:@"rtmp://192.168.0.197/live/" andStreamKey:@"myStream"];
+
     UIViewController *vc = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateInitialViewController];
     self.window.rootViewController = vc;
     [self.window makeKeyAndVisible];

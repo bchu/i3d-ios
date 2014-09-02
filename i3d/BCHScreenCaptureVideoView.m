@@ -2,13 +2,15 @@
 #import "BCHScreenCaptureVideoView.h"
 #import "BCHVideoWriter.h"
 #import "BCHDataManager.h"
-
+#import "BCHVideoSession.h"
 #import <AFNetworking/AFNetworking.h>
 
 static NSUInteger BCH_TICK_SECONDS = 1;
 static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 
 @interface BCHScreenCaptureVideoView () <AVCaptureVideoDataOutputSampleBufferDelegate>
+@property (strong, nonatomic) BCHVideoSession *videoSession;
+
 @property (strong, nonatomic) NSArray *videoQueue;
 @property (strong, nonatomic) BCHVideoWriter *queuedWriter;
 @property (strong, nonatomic) BCHVideoWriter *currentWriter;
@@ -44,6 +46,11 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
         [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
     }
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:BCHWritingDocumentsFileNames];
+
+
+    _videoSession = [[BCHVideoSession alloc] initWithVideoSize:self.bounds.size frameRate:BCH_DEFAULT_FRAME_RATE bitrate:500000];
+    [_videoSession startRtmpSessionWithURL:@"rtmp://localhost/live" andStreamKey:[[NSUUID UUID] UUIDString]];
+//    [_videoSession endRtmpSession];
 }
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
@@ -189,7 +196,9 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 
         if (self.currentWriter.recording) {
             float millisElapsed = [[NSDate date] timeIntervalSinceDate:self.currentWriter.startedAt] * 1000.0;
-            [self.currentWriter writeVideoFrameAtTime:CMTimeMake((int)millisElapsed, 1000) image:image];
+            [self.currentWriter writeVideoFrameAtTime:CMTimeMake((int)millisElapsed, 1000) image:image block:^(CVPixelBufferRef buffer) {
+                [self.videoSession bufferCaptured:buffer];
+            }];
         }
 
         CGFloat processingSeconds = [[NSDate date] timeIntervalSinceDate:start];
@@ -206,10 +215,10 @@ static CGFloat BCH_DEFAULT_FRAME_RATE = 30;
 //static int frameCount = 0;            //debugging
 - (void) drawRect:(CGRect)rect {
     NSDate* start = [NSDate date];
-    
+
     // BRIAN NOTE: Original code that uses createBitmapContextOfSize:
 //    CGContextRef context = [self createBitmapContextOfSize:self.frame.size];
-//    
+//
 //    //not sure why this is necessary...image renders upside-down and mirrored
 //    CGAffineTransform flipVertical = CGAffineTransformMake(1, 0, 0, -1, 0, self.frame.size.height);
 //    CGContextConcatCTM(context, flipVertical);
